@@ -14,7 +14,8 @@
 
 #define PWM_MAX 255
 #define PWM_MIN 0
-#define PWM_FREQUENCY 200 // slow enough to easily bitbang...but still using PWM
+#define PWM_FREQUENCY 200 
+#define PWM_RESOLUTION 8
 #define REFRESH_RATE_US 1000  // 1ms
 
 //|IN-4 |IN-7 |IN-7A|IN-7B|
@@ -94,6 +95,7 @@ typedef struct {
   const uint8_t AnodePin;
   volatile int Delay;
   uint8_t ActiveCathode;
+  uint8_t PwmPhase;
   // int PwmStart;
   // int PwmEnd;
 } Tube;

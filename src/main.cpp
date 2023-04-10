@@ -10,17 +10,28 @@
 
 // Stella configuration
 Tube Tubes[NUM_TUBES] = {
-            {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0},
-          {IN4,  IN4_7    /*L*/, PWM_PIN_2, 0, 2},
-        {IN4,  IN4_7    /*L*/, PWM_PIN_3, 0, 4},
-      {IN7A, IN7_m    /*E*/, PWM_PIN_4, 0, 6},
-    {IN7A, IN7_Plus /*T*/, PWM_PIN_5, 0, 8},
-  {IN7B, IN7B_S   /*S*/, PWM_PIN_6, 0, 0},
+            {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},
+          {IN4,  IN4_7    /*L*/, PWM_PIN_2, 0, 2, 0},
+        {IN4,  IN4_7    /*L*/, PWM_PIN_3, 0, 4, 0},
+      {IN7A, IN7_m    /*E*/, PWM_PIN_4, 0, 6, 0},
+    {IN7A, IN7_Plus /*T*/, PWM_PIN_5, 0, 8, 0},
+  {IN7B, IN7B_S   /*S*/, PWM_PIN_6, 0, 0, 0},
 };
+
+// Emmett configuration
+// Tube Tubes[NUM_TUBES] = {
+//             {IN7, IN7_Plus /*T*/, PWM_PIN_1, 0, 0},
+//           {IN7, IN7_Plus /*T*/, PWM_PIN_2, 0, 2},
+//         {IN7, IN7_m    /*E*/, PWM_PIN_3, 0, 4},
+//       {IN7, IN7_m    /*M*/, PWM_PIN_4, 0, 6},
+//     {IN7, IN7_m    /*M*/, PWM_PIN_5, 0, 8},
+//   {IN7, IN7_m    /*E*/, PWM_PIN_6, 0, 0},
+// };
 
 Pwm pwm;
 hw_timer_t *refreshTimer;
 volatile bool refreshTick = false;
+volatile int pwmDelay = 0;
 volatile int stellaDelay = 5000;
 
 uint8_t randomDigit(TubeType type) {
@@ -30,6 +41,7 @@ uint8_t randomDigit(TubeType type) {
 void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
   stellaDelay--;
+  pwmDelay--;
   for (int i = 0; i < NUM_TUBES; i++) {
     Tubes[i].Delay--;
   }
@@ -98,7 +110,7 @@ void nixieDisplay(uint8_t tube6, uint8_t tube5, uint8_t tube4, uint8_t tube3, ui
 }
 
 void nixieDisplay() {
-  Serial.printf("%d%d%d%d%d%d\n", Tubes[5].ActiveCathode, Tubes[4].ActiveCathode, Tubes[3].ActiveCathode, Tubes[2].ActiveCathode, Tubes[1].ActiveCathode, Tubes[0].ActiveCathode);
+  //Serial.printf("%d%d%d%d%d%d\n", Tubes[5].ActiveCathode, Tubes[4].ActiveCathode, Tubes[3].ActiveCathode, Tubes[2].ActiveCathode, Tubes[1].ActiveCathode, Tubes[0].ActiveCathode);
   nixieDisplay(
     TubeCathodes[Tubes[5].Type][Tubes[5].ActiveCathode],
     TubeCathodes[Tubes[4].Type][Tubes[4].ActiveCathode],
@@ -109,10 +121,24 @@ void nixieDisplay() {
 }
 
 bool stella = false;
+
+// const
+const int BrightnessPeriodSteps = 90;
+const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
+
+// configurable
+int brightnessMin = 40;
+int brightnessMax = PWM_MAX;
+int brightnessPhaseDeg = 0;
+int brightnessPeriodMs = 900;
+int brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
+
+int angle = 0;
 void handleRefresh() {
   if (refreshTick) {
     refreshTick = false;
 
+    // Stella still animation
     if (stellaDelay < 0) {
       stella = !stella;
       stellaDelay = stella ? 2000 : 5000;
@@ -128,6 +154,20 @@ void handleRefresh() {
       }
     }
 
+    // PWM animation
+    if (pwmDelay < 0) {
+      for (int i = 0; i < NUM_TUBES; i++) {
+        int tubePhaseOffsetDeg = (360 / NUM_TUBES) * i;
+        float tubePhaseRad = (brightnessPhaseDeg + tubePhaseOffsetDeg) * M_PI / 180;
+        int pwm_duty = brightnessMin + (brightnessMax - brightnessMin) * sin(tubePhaseRad);
+        pwm.write(Tubes[i].AnodePin, pwm_duty, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
+      }
+      
+      brightnessPhaseDeg = (brightnessPhaseDeg + BrightnessPhaseStepDeg) % 360;
+      pwmDelay = brightnessPhaseStepMs;
+    }
+
+    // normal animation
     if (!stella) {
       bool update = false;
 
@@ -159,9 +199,9 @@ void setup() {
   pinMode(LATCH_PIN, OUTPUT);
   digitalWrite(LATCH_PIN, LOW);
   for (int i = 0; i < NUM_TUBES; i++) {
-    //pwm.write(Tubes[i].AnodePin, PWM_MAX, PWM_FREQUENCY);
     pinMode(Tubes[i].AnodePin, OUTPUT);
     digitalWrite(Tubes[i].AnodePin, LOW);
+    //pwm.write(Tubes[i].AnodePin, PWM_MIN, PWM_FREQUENCY);
   }
 
   SPI.begin();
@@ -174,10 +214,11 @@ void setup() {
   timerAlarmWrite(refreshTimer, REFRESH_RATE_US, true);
   timerAlarmEnable(refreshTimer);
 
+  // calculate PWM phase offset for each tube to smooth out power consumption
   for (int i = 0; i < NUM_TUBES; i++) {
-    //pwm.write(Tubes[i].AnodePin, PWM_MAX, PWM_FREQUENCY);
-    pinMode(Tubes[i].AnodePin, OUTPUT);
-    digitalWrite(Tubes[i].AnodePin, HIGH);
+    int phaseDeg = (360 / NUM_TUBES) * i;
+    Tubes[i].PwmPhase = (phaseDeg / 360.0) * (pow(2,PWM_RESOLUTION));
+    pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
   }
 
   Serial.println("Setup complete");
@@ -187,3 +228,5 @@ void loop() {
   handleRefresh();
   ArduinoOTA.handle();
 }
+
+
