@@ -21,11 +21,6 @@ uint8_t randomDigit(TubeType type) {
 
 void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
-  // stellaDelay--;
-  //pwmDelay--;
-  // for (int i = 0; i < NUM_TUBES; i++) {
-  //   Tubes[i].Delay--;
-  // }
 }
 
 void otaSetup() {
@@ -90,44 +85,23 @@ void nixieDisplay(uint8_t tube6, uint8_t tube5, uint8_t tube4, uint8_t tube3, ui
   digitalWrite(LATCH_PIN, HIGH);
 }
 
-void nixieDisplay() {
-  //Serial.printf("%d%d%d%d%d%d\n", Tubes[5].ActiveCathode, Tubes[4].ActiveCathode, Tubes[3].ActiveCathode, Tubes[2].ActiveCathode, Tubes[1].ActiveCathode, Tubes[0].ActiveCathode);
-  nixieDisplay(
-    TubeCathodes[Tubes[5].Type][Tubes[5].ActiveCathode],
-    TubeCathodes[Tubes[4].Type][Tubes[4].ActiveCathode],
-    TubeCathodes[Tubes[3].Type][Tubes[3].ActiveCathode],
-    TubeCathodes[Tubes[2].Type][Tubes[2].ActiveCathode],
-    TubeCathodes[Tubes[1].Type][Tubes[1].ActiveCathode],
-    TubeCathodes[Tubes[0].Type][Tubes[0].ActiveCathode]);
-}
-
-// bool stella = false;
-// const int BrightnessPeriodSteps = 90;
-// const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
-
-// int brightnessMin = 80;
-// int brightnessMax = PWM_MAX;
-// int brightnessPhaseDeg = 0;
-// int brightnessPeriodMs = 900;
-// int brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
-
-Animation *animation = new SlotMachineAnimation();
+Animation *animation0 = new PrimaryCathodeAnimation();
+Animation *animation1 = new SlotMachineAnimation();
+Animation *curAnimation = animation1;
 void handleRefresh() {
   if (refreshTick) {
     refreshTick = false;
 
     // if animation is complete, create new animation
-    if (animation->isComplete()) {
-      // animation = (animation.Type == Animation.Type.StellaStatic)
-      //   ? createRandomAnimation();
-      //   : PrimaryStaticAnimation();
-      Serial.println("animation complete");
-      animation->initialize();
+    if (curAnimation->isComplete()) {
+      curAnimation = (curAnimation == animation1) ? animation0 : animation1;
+      curAnimation->initialize();
     }
 
-    TickResult result = animation->handleTick();
+    TickResult result = curAnimation->handleTick();
+
     if (result.CathodeUpdate) {
-      nixieDisplay();
+      nixieDisplay(Tubes[5].ActiveCathode, Tubes[4].ActiveCathode, Tubes[3].ActiveCathode, Tubes[2].ActiveCathode, Tubes[1].ActiveCathode, Tubes[0].ActiveCathode);
     }
 
     if (result.BrightnessUpdate) {
@@ -137,65 +111,11 @@ void handleRefresh() {
       }
     }
 
-    /*
-    // Stella still animation
-    if (stellaDelay < 0) {
-      stella = !stella;
-      stellaDelay = stella ? 2000 : 5000;
-
-      for (int i = 0; i < NUM_TUBES; i++) {
-        nixieDisplay(
-          Tubes[5].PrimaryCathode,
-          Tubes[4].PrimaryCathode,
-          Tubes[3].PrimaryCathode,
-          Tubes[2].PrimaryCathode,
-          Tubes[1].PrimaryCathode,
-          Tubes[0].PrimaryCathode);
-        pwm.write(Tubes[i].AnodePin, 200, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
-      }
-    }
-  */
-    //
-
-    // // PWM animation
-    // if (pwmDelay < 0) {
-    //   for (int i = 0; i < NUM_TUBES; i++) {
-    //     int tubePhaseOffsetDeg = (360 / NUM_TUBES) * i;
-    //     float tubePhaseRad = (brightnessPhaseDeg + tubePhaseOffsetDeg) * M_PI / 180;
-    //     Tubes[i].Brightness = brightnessMin + (brightnessMax - brightnessMin) * sin(tubePhaseRad);
-    //     pwm.write(Tubes[i].AnodePin, Tubes[i].Brightness, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
-    //   }
-
-    //   Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n", Tubes[5].Brightness, Tubes[4].Brightness, Tubes[3].Brightness, Tubes[2].Brightness, Tubes[1].Brightness, Tubes[0].Brightness);
-    //   brightnessPhaseDeg = (brightnessPhaseDeg + BrightnessPhaseStepDeg) % 360;
-    //   pwmDelay = brightnessPhaseStepMs;
-    // }
-
-
-    /*
-    // normal animation
-    if (!stella) {
-      bool update = false;
-
-      for (int i = 0; i < NUM_TUBES; i++) {
-        if (Tubes[i].Delay < 0) {
-          Tubes[i].ActiveCathode = (Tubes[i].ActiveCathode + 1) % TubeCathodeCount[Tubes[i].Type];
-          Tubes[i].Delay = 45;
-          update = true;
-        }
-      }
-
-      if (update) {
-        nixieDisplay();
-      }
-
-      */
-    }
-
     if (refreshTick) {
       Serial.println("Refresh took too long");
     }
   }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -228,7 +148,6 @@ void setup() {
     pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
   }
 
-  animation = new SlotMachineAnimation;
   Serial.println("Setup complete");
 }
 

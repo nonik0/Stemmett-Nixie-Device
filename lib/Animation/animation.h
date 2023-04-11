@@ -17,24 +17,60 @@ typedef struct {
 
 class Animation {
  private:
-  int _duration = 3600;
+  int _durationMs = 3600;
 
  public:
   virtual ~Animation() = default;
   virtual void initialize() = 0;
   virtual TickResult handleTick() = 0;
   bool isComplete();
+  void setDuration(int durationMs);
 };
 
-void Animation::initialize() { _duration = 3600; }
+void Animation::setDuration(int durationMs) { _durationMs = durationMs; }
 
 TickResult Animation::handleTick() {
-  _duration--;
+  _durationMs--;
   return {false, false};
+
 }
 bool Animation::isComplete() {
-  return _duration < 0;
+  return _durationMs < 0;
 }
+
+
+class PrimaryCathodeAnimation : public Animation {
+  private:
+    bool _firstTick;
+  public:
+    PrimaryCathodeAnimation();
+    void initialize() override;
+    TickResult handleTick() override;
+};
+
+PrimaryCathodeAnimation::PrimaryCathodeAnimation() {
+  initialize();
+}
+
+void PrimaryCathodeAnimation::initialize() {
+  Animation::setDuration(2000);
+  _firstTick = true;
+}
+
+TickResult PrimaryCathodeAnimation::handleTick() {
+  Animation::handleTick();
+
+  if (_firstTick) {
+    for (int i = 0; i < NUM_TUBES; i++) {
+      Tubes[i].ActiveCathode = Tubes[i].PrimaryCathode;
+      Tubes[i].Brightness = 150;
+    }
+    return {true,true};
+  }
+
+  return {false,false};
+}
+
 
 class SlotMachineAnimation : public Animation {
  private:
@@ -42,6 +78,7 @@ class SlotMachineAnimation : public Animation {
   const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
 
   int _cathodeDelay;
+  uint8_t _cathodeIndex[NUM_TUBES];
   int _pwmDelay;
   int _brightnessMin;
   int _brightnessMax;
@@ -55,12 +92,18 @@ class SlotMachineAnimation : public Animation {
   TickResult handleTick() override;
 };
 
-SlotMachineAnimation::SlotMachineAnimation() { initialize(); }
+SlotMachineAnimation::SlotMachineAnimation() {
+  initialize();
+}
 
 void SlotMachineAnimation::initialize() {
-  Animation::initialize();
+  Animation::setDuration(3600);
 
   _cathodeDelay = 0;
+  for (int i = 0; i < NUM_TUBES; i++) {
+    _cathodeIndex[i] = TubeCathodes[Tubes[i].Type][random(TubeCathodeCount[Tubes[i].Type])];
+  }
+
   _pwmDelay = 0;
   _brightnessMin = 80;
   _brightnessMax = PWM_MAX;
@@ -76,18 +119,12 @@ TickResult SlotMachineAnimation::handleTick() {
   _cathodeDelay--;
   _pwmDelay--;
 
-  // Serial.printf("_cathodeDelay:%d, _pwmDelay:%d\n", _cathodeDelay,
-  // _pwmDelay);
-
   if (_cathodeDelay < 0) {
     for (int i = 0; i < NUM_TUBES; i++) {
-      Tubes[i].ActiveCathode =
-          (Tubes[i].ActiveCathode + 1) % TubeCathodeCount[Tubes[i].Type];
+      _cathodeIndex[i] = (_cathodeIndex[i] + 1) % TubeCathodeCount[Tubes[i].Type];
+      Tubes[i].ActiveCathode = TubeCathodes[Tubes[i].Type][_cathodeIndex[i]];
     }
 
-    // Serial.printf("K:%d|%d|%d|%d|%d|%d\n", Tubes[5].ActiveCathode,
-    // Tubes[4].ActiveCathode, Tubes[3].ActiveCathode, Tubes[2].ActiveCathode,
-    // Tubes[1].ActiveCathode, Tubes[0].ActiveCathode);
     _cathodeDelay = 45;
     result.CathodeUpdate = true;
   }
