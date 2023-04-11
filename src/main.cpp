@@ -5,28 +5,9 @@
 #include <WiFiUdp.h>
 #include <pwmWrite.h>
 
-#include "main.h"
+#include "animation.h"
 #include "secrets.h"
-
-// Stella configuration
-Tube Tubes[NUM_TUBES] = {
-            {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},
-          {IN4,  IN4_7    /*L*/, PWM_PIN_2, 0, 2, 0},
-        {IN4,  IN4_7    /*L*/, PWM_PIN_3, 0, 4, 0},
-      {IN7A, IN7_m    /*E*/, PWM_PIN_4, 0, 6, 0},
-    {IN7A, IN7_Plus /*T*/, PWM_PIN_5, 0, 8, 0},
-  {IN7B, IN7B_S   /*S*/, PWM_PIN_6, 0, 0, 0},
-};
-
-// Emmett configuration
-// Tube Tubes[NUM_TUBES] = {
-//             {IN7, IN7_Plus /*T*/, PWM_PIN_1, 0, 0},
-//           {IN7, IN7_Plus /*T*/, PWM_PIN_2, 0, 2},
-//         {IN7, IN7_m    /*E*/, PWM_PIN_3, 0, 4},
-//       {IN7, IN7_m    /*M*/, PWM_PIN_4, 0, 6},
-//     {IN7, IN7_m    /*M*/, PWM_PIN_5, 0, 8},
-//   {IN7, IN7_m    /*E*/, PWM_PIN_6, 0, 0},
-// };
+#include "tubes.h"
 
 Pwm pwm;
 hw_timer_t *refreshTimer;
@@ -40,11 +21,11 @@ uint8_t randomDigit(TubeType type) {
 
 void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
-  stellaDelay--;
-  pwmDelay--;
-  for (int i = 0; i < NUM_TUBES; i++) {
-    Tubes[i].Delay--;
-  }
+  // stellaDelay--;
+  //pwmDelay--;
+  // for (int i = 0; i < NUM_TUBES; i++) {
+  //   Tubes[i].Delay--;
+  // }
 }
 
 void otaSetup() {
@@ -120,24 +101,43 @@ void nixieDisplay() {
     TubeCathodes[Tubes[0].Type][Tubes[0].ActiveCathode]);
 }
 
-bool stella = false;
+// bool stella = false;
+// const int BrightnessPeriodSteps = 90;
+// const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
 
-// const
-const int BrightnessPeriodSteps = 90;
-const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
+// int brightnessMin = 80;
+// int brightnessMax = PWM_MAX;
+// int brightnessPhaseDeg = 0;
+// int brightnessPeriodMs = 900;
+// int brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
 
-// configurable
-int brightnessMin = 40;
-int brightnessMax = PWM_MAX;
-int brightnessPhaseDeg = 0;
-int brightnessPeriodMs = 900;
-int brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
-
-int angle = 0;
+Animation *animation = new SlotMachineAnimation();
 void handleRefresh() {
   if (refreshTick) {
     refreshTick = false;
 
+    // if animation is complete, create new animation
+    if (animation->isComplete()) {
+      // animation = (animation.Type == Animation.Type.StellaStatic)
+      //   ? createRandomAnimation();
+      //   : PrimaryStaticAnimation();
+      Serial.println("animation complete");
+      animation->initialize();
+    }
+
+    TickResult result = animation->handleTick();
+    if (result.CathodeUpdate) {
+      nixieDisplay();
+    }
+
+    if (result.BrightnessUpdate) {
+      for (int i = 0; i < NUM_TUBES; i++) {
+        //Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n", Tubes[5].Brightness, Tubes[4].Brightness, Tubes[3].Brightness, Tubes[2].Brightness, Tubes[1].Brightness, Tubes[0].Brightness);
+        pwm.write(Tubes[i].AnodePin, Tubes[i].Brightness, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
+      }
+    }
+
+    /*
     // Stella still animation
     if (stellaDelay < 0) {
       stella = !stella;
@@ -151,22 +151,28 @@ void handleRefresh() {
           Tubes[2].PrimaryCathode,
           Tubes[1].PrimaryCathode,
           Tubes[0].PrimaryCathode);
+        pwm.write(Tubes[i].AnodePin, 200, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
       }
     }
+  */
+    //
 
-    // PWM animation
-    if (pwmDelay < 0) {
-      for (int i = 0; i < NUM_TUBES; i++) {
-        int tubePhaseOffsetDeg = (360 / NUM_TUBES) * i;
-        float tubePhaseRad = (brightnessPhaseDeg + tubePhaseOffsetDeg) * M_PI / 180;
-        int pwm_duty = brightnessMin + (brightnessMax - brightnessMin) * sin(tubePhaseRad);
-        pwm.write(Tubes[i].AnodePin, pwm_duty, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
-      }
-      
-      brightnessPhaseDeg = (brightnessPhaseDeg + BrightnessPhaseStepDeg) % 360;
-      pwmDelay = brightnessPhaseStepMs;
-    }
+    // // PWM animation
+    // if (pwmDelay < 0) {
+    //   for (int i = 0; i < NUM_TUBES; i++) {
+    //     int tubePhaseOffsetDeg = (360 / NUM_TUBES) * i;
+    //     float tubePhaseRad = (brightnessPhaseDeg + tubePhaseOffsetDeg) * M_PI / 180;
+    //     Tubes[i].Brightness = brightnessMin + (brightnessMax - brightnessMin) * sin(tubePhaseRad);
+    //     pwm.write(Tubes[i].AnodePin, Tubes[i].Brightness, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
+    //   }
 
+    //   Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n", Tubes[5].Brightness, Tubes[4].Brightness, Tubes[3].Brightness, Tubes[2].Brightness, Tubes[1].Brightness, Tubes[0].Brightness);
+    //   brightnessPhaseDeg = (brightnessPhaseDeg + BrightnessPhaseStepDeg) % 360;
+    //   pwmDelay = brightnessPhaseStepMs;
+    // }
+
+
+    /*
     // normal animation
     if (!stella) {
       bool update = false;
@@ -179,16 +185,17 @@ void handleRefresh() {
         }
       }
 
-      if (update) {      
+      if (update) {
         nixieDisplay();
       }
+
+      */
     }
 
     if (refreshTick) {
       Serial.println("Refresh took too long");
     }
   }
-}
 
 void setup() {
   Serial.begin(115200);
@@ -221,6 +228,7 @@ void setup() {
     pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
   }
 
+  animation = new SlotMachineAnimation;
   Serial.println("Setup complete");
 }
 
