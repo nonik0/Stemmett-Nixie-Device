@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 //
 // T6 | T5 | T4 | T3 | T2 | T1
 //
@@ -99,23 +101,3 @@ typedef struct {
   uint32_t PwmPhase;
   uint32_t Brightness;
 } Tube;
-
-// // Stella configuration
-// Tube Tubes[NUM_TUBES] = {
-//             {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},
-//           {IN4,  IN4_7    /*L*/, PWM_PIN_2, 0, 2, 0},
-//         {IN4,  IN4_7    /*L*/, PWM_PIN_3, 0, 4, 0},
-//       {IN7A, IN7_m    /*E*/, PWM_PIN_4, 0, 6, 0},
-//     {IN7A, IN7_Plus /*T*/, PWM_PIN_5, 0, 8, 0},
-//   {IN7B, IN7B_S   /*S*/, PWM_PIN_6, 0, 0, 0},
-// };
-
-// Emmett configuration
-Tube Tubes[NUM_TUBES] = {
-            {IN7A, IN7_Plus /*T*/, PWM_PIN_1, 0, 0, 0},
-          {IN7A, IN7_Plus /*T*/, PWM_PIN_2, 0, 0, 0},
-        {IN7A, IN7_m    /*E*/, PWM_PIN_3, 0, 0, 0},
-      {IN7 , IN7_m    /*M*/, PWM_PIN_4, 0, 0, 0},
-    {IN7 , IN7_m    /*M*/, PWM_PIN_5, 0, 0, 0},
-  {IN7A, IN7_m    /*E*/, PWM_PIN_6, 0, 0, 0},
-};
