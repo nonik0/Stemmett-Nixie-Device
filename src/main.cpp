@@ -4,11 +4,12 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-#define NUM_ANIMATIONS  3
+#define NUM_ANIMATIONS  2
 Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
-  new SlotMachineAnimation(),
-  new RandomScanAnimation()
+  new FadeAnimation(),
+  //new SlotMachineAnimation(),
+  //new RandomScanAnimation()
 };
 
 

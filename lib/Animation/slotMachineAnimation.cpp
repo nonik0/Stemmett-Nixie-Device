@@ -3,7 +3,7 @@
 #include "slotMachineAnimation.h"
 
 void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES]) {
-  Animation::setDuration(7200);
+  Animation::setDuration(14440);
 
   _cathodeDelay = 0;
   for (int i = 0; i < NUM_TUBES; i++) {
@@ -14,7 +14,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES]) {
   _brightnessMin = 80;
   _brightnessMax = PWM_MAX;
   _brightnessPhaseDeg = 0;
-  _brightnessPeriodMs = random(500,1500);
+  _brightnessPeriodMs = random(500,3000);
   _brightnessPhaseStepMs = _brightnessPeriodMs / BrightnessPeriodSteps;
 }
 
