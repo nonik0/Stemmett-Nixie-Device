@@ -3,6 +3,7 @@
 #include "slotMachineAnimation.h"
 
 void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES]) {
+  Serial.println("SlotMachineAnimation::initialize");
   Animation::setDuration(14440);
 
   _cathodeDelay = 0;

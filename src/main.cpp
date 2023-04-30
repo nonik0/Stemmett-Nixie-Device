@@ -11,12 +11,10 @@ Animation* animations[NUM_ANIMATIONS] = {
   //new SlotMachineAnimation(),
   //new RandomScanAnimation()
 };
-
+Animation *curAnimation;
 
 hw_timer_t *refreshTimer;
 volatile bool refreshTick = false;
-volatile int pwmDelay = 0;
-volatile int stellaDelay = 5000;
 
 uint8_t randomDigit(TubeType type) {
   return TubeCathodes[type][random(TubeCathodeCount[type])];
@@ -26,17 +24,26 @@ void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
 }
 
-Animation *curAnimation = animations[0];
+
 void handleRefresh() {
   if (refreshTick) {
     refreshTick = false;
 
-    // if animation is complete, create new animation
+    // if animation is complete, initialize new animation
     if (curAnimation->isComplete()) {
       curAnimation = (curAnimation == animations[0])
         ? animations[random(1, NUM_ANIMATIONS)]
         : animations[0];
+
+      Serial.println("main::handleRefresh::curAnimation->initialize()");
       curAnimation->initialize(Tubes);
+      Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n",
+        Tubes[5].Brightness,
+        Tubes[4].Brightness,
+        Tubes[3].Brightness,
+        Tubes[2].Brightness,
+        Tubes[1].Brightness,
+        Tubes[0].Brightness);
     }
 
     TickResult result = curAnimation->handleTick(Tubes);
@@ -77,6 +84,10 @@ void setup() {
     Tubes[i].PwmPhase = (phaseDeg / 360.0) * (pow(2,PWM_RESOLUTION));
     pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION, Tubes[i].PwmPhase);
   }
+
+  // start first animation
+  curAnimation = animations[0];
+  curAnimation->initialize(Tubes);
 
   Serial.println("Setup complete");
 }
