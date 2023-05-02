@@ -1,10 +1,31 @@
+#include <Arduino.h>
+
 #include "animationBase.h"
 #include "tubes.h"
 
 class NameAnimation : public Animation {
   private:
-    bool _firstTick;
+    bool  _firstTick;
   public:
-    void initialize(Tube tubes[NUM_TUBES]) override;
-    TickResult handleTick(Tube tubes[NUM_TUBES]) override;
+    void initialize(Tube tubes[NUM_TUBES]) {
+      Serial.println("NameAnimation::initialize");
+      Animation::setDuration(2000);
+      _firstTick = true;
+    }
+
+    TickResult handleTick(Tube tubes[NUM_TUBES]) {
+      Animation::handleTick(tubes);
+
+      if (_firstTick) {
+        for (int i = 0; i < NUM_TUBES; i++) {
+          tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
+          tubes[i].Brightness = 150;
+        }
+
+        _firstTick = false;
+        return {true,true};
+      }
+
+      return {false,false};
+    }
 };
