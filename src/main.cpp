@@ -1,6 +1,7 @@
 #include "animation.h"
 #include "ota.h"
 #include "nixieDriver.h"
+#include "rtc.h"
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
@@ -35,16 +36,7 @@ void handleRefresh() {
       curAnimation = (curAnimation == animations[0])
         ? animations[random(1, NUM_ANIMATIONS)]
         : animations[0];
-
-      Serial.println("main::handleRefresh::curAnimation->initialize()");
       curAnimation->initialize(Tubes);
-      Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n",
-        Tubes[5].Brightness,
-        Tubes[4].Brightness,
-        Tubes[3].Brightness,
-        Tubes[2].Brightness,
-        Tubes[1].Brightness,
-        Tubes[0].Brightness);
     }
 
     TickResult result = curAnimation->handleTick(Tubes);
@@ -56,8 +48,10 @@ void handleRefresh() {
 }
 
 void setup() {
+  delay(3000);
+
   Serial.begin(115200);
-  Serial.println("Starting setup...");
+  Serial.println("setup()");
 
   pinMode(EN_PIN, OUTPUT);
   digitalWrite(EN_PIN, LOW);
@@ -73,6 +67,8 @@ void setup() {
 
   // draws a lot of current, should do before enabling tubes
   otaSetup();
+
+  rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true);  // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, true);

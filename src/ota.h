@@ -6,8 +6,7 @@
 #include "secrets.h"
 
 void otaSetup() {
-  Serial.begin(115200);
-  Serial.println("Booting");
+  Serial.println("otaSetup()");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
