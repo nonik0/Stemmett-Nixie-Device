@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <pwmWrite.h>
 #include <SPI.h>
 
@@ -18,8 +19,8 @@ void nixieDisplay(Tube tubes[NUM_TUBES]) {
 }
 
 void nixieBrightness(Tube tubes[NUM_TUBES]) {
-    for (int i = 0; i < NUM_TUBES; i++) {
-      //Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n", Tubes[5].Brightness, Tubes[4].Brightness, Tubes[3].Brightness, Tubes[2].Brightness, Tubes[1].Brightness, Tubes[0].Brightness);
+    //Serial.printf("B:%3d|%3d|%3d|%3d|%3d|%3d\n", tubes[5].Brightness, tubes[4].Brightness, tubes[3].Brightness, tubes[2].Brightness, tubes[1].Brightness, tubes[0].Brightness);
+    for (int i = 0; i < NUM_TUBES; i++) {  
       pwm.write(tubes[i].AnodePin, tubes[i].Brightness, PWM_FREQUENCY, PWM_RESOLUTION, tubes[i].PwmPhase);
     }
 }
