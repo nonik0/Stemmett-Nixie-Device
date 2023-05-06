@@ -48,7 +48,7 @@ void FadeAnimation::setNextProgression() {
       break;
     case FadeIn:
      // TODO: configuratible max brightness (daytime/nightnime, I2C light sensor, etc)
-      setRandomFadePattern(152, randomDelay);
+      setRandomFadePattern(_maxBrightness, randomDelay);
       break;
     case FadeComplete:
       setDuration(-1);
@@ -72,9 +72,9 @@ void FadeAnimation::setTubeFade(int tubeIndex, int targetBrightness, int duratio
   _tubeFadeState[tubeIndex].stepsLeft = max(1,  (int) ceil(durationMs / FadeStepDelay));
 }
 
-void FadeAnimation::initialize(Tube tubes[NUM_TUBES]) {
+void FadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Serial.println("FadeAnimation::initialize");
-
+  Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(30000);
   _fadeProgression = FadeStart;
   setNextProgression();

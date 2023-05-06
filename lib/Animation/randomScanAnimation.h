@@ -8,6 +8,6 @@ class RandomScanAnimation : public Animation {
   int _tubeProgress[NUM_TUBES];
 
  public:
-  void initialize(Tube tubes[NUM_TUBES]);
+  void initialize(Tube tubes[NUM_TUBES] , int maxBrightness) override;
   TickResult handleTick(Tube tubes[NUM_TUBES]) override;
 };

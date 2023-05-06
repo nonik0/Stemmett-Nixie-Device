@@ -10,10 +10,11 @@ typedef struct {
 class Animation {
  private:
   int _durationMs = 3600;
-
+ protected:
+  int _maxBrightness;
  public:
   virtual ~Animation() = default;
-  virtual void initialize(Tube tubes[NUM_TUBES]) = 0;
+  virtual void initialize(Tube tubes[NUM_TUBES], int maxBrightness) = 0;
   virtual TickResult handleTick(Tube tubes[NUM_TUBES]) = 0;
   bool isComplete();
   void setDuration(int durationMs);

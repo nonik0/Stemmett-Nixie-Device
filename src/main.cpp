@@ -36,7 +36,7 @@ void handleRefresh() {
       curAnimation = (curAnimation == animations[0])
         ? animations[random(1, NUM_ANIMATIONS)]
         : animations[0];
-      curAnimation->initialize(Tubes);
+      curAnimation->initialize(Tubes, 152);
     }
 
     TickResult result = curAnimation->handleTick(Tubes);
@@ -84,7 +84,7 @@ void setup() {
 
   // start first animation
   curAnimation = animations[0];
-  curAnimation->initialize(Tubes);
+  curAnimation->initialize(Tubes, 152);
 
   Serial.println("Setup complete");
 }

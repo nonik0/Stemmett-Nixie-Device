@@ -2,9 +2,10 @@
 
 #include "randomScanAnimation.h"
 
-void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES]) {
+void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+  Serial.println("RandomScanAnimation::initialize");
   Animation::setDuration(10000);
-
+  Animation::initialize(tubes, maxBrightness);
   _activeTube = -1;
   _cathodeDelay = 0;
   for (int i = 0; i < NUM_TUBES; i++) {

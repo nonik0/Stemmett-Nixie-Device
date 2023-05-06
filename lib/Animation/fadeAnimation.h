@@ -33,6 +33,6 @@ class FadeAnimation : public Animation {
   protected:
     TubeFadeState _tubeFadeState[NUM_TUBES]; // TODO: FadeHandler
   public:
-    void initialize(Tube tubes[NUM_TUBES]) override;
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override;
     TickResult handleTick(Tube tubes[NUM_TUBES]) override;
 };

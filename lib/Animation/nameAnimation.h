@@ -7,8 +7,9 @@ class NameAnimation : public Animation {
   private:
     bool  _firstTick;
   public:
-    void initialize(Tube tubes[NUM_TUBES]) {
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
       Serial.println("NameAnimation::initialize");
+      Animation::initialize(tubes, maxBrightness);
       Animation::setDuration(2000);
       _firstTick = true;
     }
@@ -19,7 +20,7 @@ class NameAnimation : public Animation {
       if (_firstTick) {
         for (int i = 0; i < NUM_TUBES; i++) {
           tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
-          tubes[i].Brightness = 150;
+          tubes[i].Brightness = _maxBrightness;
         }
 
         _firstTick = false;

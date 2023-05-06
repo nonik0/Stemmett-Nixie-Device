@@ -12,8 +12,9 @@ class NameGlitchAnimation : public Animation {
   private:
     int _flickerDelay;
   public:
-    void initialize(Tube tubes[NUM_TUBES]) override {
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override {
       Serial.println("NameGlitchAnimation::initialize");
+      Animation::initialize(tubes, maxBrightness);
       Animation::setDuration(2000);
       _flickerDelay = 0;
     }
