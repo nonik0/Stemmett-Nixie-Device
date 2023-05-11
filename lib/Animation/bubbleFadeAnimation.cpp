@@ -28,12 +28,14 @@ TickResult BubbleFadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   _activeBubbleDuration--;
   _newBubbleCooldown--;
 
+  bool isActivePhase = _activeBubbleDuration > 0;
+
   bool update = _fadeHelper.handleTick(tubes);
 
   for (int i = 0; i < NUM_TUBES; i++) {
     if (_bubbles[i].isActive && _fadeHelper.isComplete(i)) {
-      if (tubes[i].Brightness >= _bubbles[i].targetBrightness) {
-        if (_activeBubbleDuration > 0) {
+      if (tubes[i].Brightness == _bubbles[i].targetBrightness) {
+        if (sisActivePhase) {
           _fadeHelper.setTubeFade(i, 0, _bubbles[i].fadeDuration);
         }
       }
@@ -44,8 +46,8 @@ TickResult BubbleFadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     }
   }
 
-  bool isActivePhaseComplete = _activeBubbleDuration > 0;
-  int activeBubbleCountTarget = isActivePhaseComplete ? 5 : 6;
+  
+  int activeBubbleCountTarget = isActivePhase ? 5 6;
 
   if (_newBubbleCooldown < 0 && _activeBubbleCount < activeBubbleCountTarget)
   {
@@ -56,7 +58,7 @@ TickResult BubbleFadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       tubeIndex = random(NUM_TUBES);
     } while (_bubbles[tubeIndex].isActive);
 
-    int targetBrightness = isActivePhaseComplete ? random(20, _maxBrightness) : _maxBrightness;
+    int targetBrightness = isActivePhase ? random(20, _maxBrightness) : _maxBrightness;
     int fadeDuration = random(300, 1000);
 
     _bubbles[tubeIndex].isActive = true;
