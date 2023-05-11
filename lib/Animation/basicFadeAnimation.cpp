@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-#include "fadeAnimation.h"
+#include "basicFadeAnimation.h"
 
-int* FadeAnimation::getRandomInitialDelays(FadePattern fadeType, int fadeMultiplier) {
+int* BasicFadeAnimation::getRandomInitialDelays(FadePattern fadeType, int fadeMultiplier) {
   static int initialDelays[NUM_TUBES];
   int* randomTubeOrder = (fadeType == FadeRandom) ? getRandomTubeOrder() : NULL;
 
@@ -20,7 +20,7 @@ int* FadeAnimation::getRandomInitialDelays(FadePattern fadeType, int fadeMultipl
   return initialDelays;
 }
 
-int* FadeAnimation::getRandomTubeOrder() {
+int* BasicFadeAnimation::getRandomTubeOrder() {
   static int randomTubeOrder[NUM_TUBES];
   
   for (int i = 0; i < NUM_TUBES; i++) {
@@ -36,7 +36,7 @@ int* FadeAnimation::getRandomTubeOrder() {
   return randomTubeOrder;
 }
 
-void FadeAnimation::setNextProgression() {
+void BasicFadeAnimation::setNextProgression() {
   Serial.printf("FadeProgression:%d->", _fadeProgression);
   _fadeProgression = (FadeProgression)((int)_fadeProgression + 1);
   Serial.println(_fadeProgression);
@@ -56,62 +56,31 @@ void FadeAnimation::setNextProgression() {
   }
 }
 
-void FadeAnimation::setRandomFadePattern(int targetBrightness, int initialDelay) {
+void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialDelay) {
   int durationMs = random(200, 2000);
   int initialDelayMultiplier = random(0, 1000);
   int* initialDelays = getRandomInitialDelays((FadePattern)random(FadePatternCount), initialDelayMultiplier);
 
   for (int i = 0; i < NUM_TUBES; i++) {
-    setTubeFade(i, targetBrightness, durationMs, initialDelay + initialDelays[i]);
+    _fadeHelper.setTubeFade(i, targetBrightness, durationMs, initialDelay + initialDelays[i]);
   }
 }
 
-void FadeAnimation::setTubeFade(int tubeIndex, int targetBrightness, int durationMs, int initialDelay = 0) {
-  _tubeFadeState[tubeIndex].targetBrightness = targetBrightness;
-  _tubeFadeState[tubeIndex].stepDelay = initialDelay;
-  _tubeFadeState[tubeIndex].stepsLeft = max(1,  (int) ceil(durationMs / FadeStepDelay));
-}
-
-void FadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("FadeAnimation::initialize");
+void BasicFadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+  Serial.println("BasicFadeAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(30000);
   _fadeProgression = FadeStart;
   setNextProgression();
 }
 
-TickResult FadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
+TickResult BasicFadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
-  bool update = false;
-  for (int i = 0; i < NUM_TUBES; i++) {
-    if (_tubeFadeState[i].stepsLeft == 0) {
-      continue;
-    }
+  bool update = _fadeHelper.handleTick(tubes);
 
-    _tubeFadeState[i].stepDelay--;
-
-    if (_tubeFadeState[i].stepDelay < 0) {
-      tubes[i].Brightness += ((int)_tubeFadeState[i].targetBrightness - (int)tubes[i].Brightness) / (int)_tubeFadeState[i].stepsLeft;
-      _tubeFadeState[i].stepsLeft--;
-      
-      if (_tubeFadeState[i].stepsLeft > 0) {
-        _tubeFadeState[i].stepDelay = FadeStepDelay;
-      }
-
-      update = true;
-    }
-  }
-
-  if (update) {
-    bool shouldProgress = true;
-    for (int i = 0; i < NUM_TUBES; i++) {
-      shouldProgress &= _tubeFadeState[i].stepsLeft == 0;
-    }
-
-    if (shouldProgress) {
+  if (update && _fadeHelper.isComplete()) {
       setNextProgression();
-    }
   }
 
   return {false, update};

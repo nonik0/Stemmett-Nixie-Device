@@ -27,14 +27,14 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   _brightnessPhaseDeg = _brightnessInitialPhaseDeg;
   _tubeTriggerPhase = 0; // cos max phase
 
-  // have brightness go negative to increase depth of animeation
-  _brightnessMin = -25;
+  // have brightness go negative to prolong effect of fade
+  _brightnessMin = random(-50, -10);
   _brightnessMax = _maxBrightness;
 
+  //Serial.printf("_brightnessMin: %d\n", _brightnessMin);
   // original values:
   //_brightnessMin = -95;
   //_brightnessMax = 255; // TODO
-
   // +: 255/-95
   // -: 152/-50
   // +: 152/-38

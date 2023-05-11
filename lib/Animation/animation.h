@@ -1,7 +1,8 @@
 #pragma once
 
 #include "animationBase.h"
-#include "fadeAnimation.h"
+#include "basicfadeAnimation.h"
+#include "bubbleFadeAnimation.h"
 #include "nameAnimation.h"
 #include "nameGlitchAnimation.h"
 #include "randomScanAnimation.h"
