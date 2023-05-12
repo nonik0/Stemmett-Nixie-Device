@@ -7,12 +7,10 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(14440);
 
-  _cathodeDelay = 0;
   _brightnessDelay = 0;
 
   for (int i = 0; i < NUM_TUBES; i++) {
     _tubePhaseOffsetDeg[i] = (360 / NUM_TUBES) * i;
-    _tubeSlotActive[i] = false;
   }
 
   // random phase direction, length and number of periods
@@ -44,18 +42,16 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
   bool brightnessUpdate = false;
-  bool cathodeUpdate = false;
-  _cathodeDelay--;
   _brightnessDelay--;
 
   if (_brightnessDelay < 0) {
     for (int i = 0; i < NUM_TUBES; i++) {
       int tubePhaseDeg = (_brightnessPhaseDeg + _tubePhaseOffsetDeg[i]) % 360;
 
-      if (!_tubeSlotActive[i]) {
+      if (!_slotHelper.isSlotEnabled(i)) {
         // activate tubes at starting phase of left-most tube
         if (tubePhaseDeg == _tubeTriggerPhase && _totalCyclesLeft > 0) {
-          _tubeSlotActive[i] = true;
+          _slotHelper.enableSlot(i);
         }
         else {
           continue;
@@ -64,7 +60,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       
       if (_totalCyclesLeft < 0 && tubePhaseDeg == _tubeTriggerPhase) {
         tubes[i].Brightness = _maxBrightness;
-        _tubeSlotActive[i] = false;
+        _slotHelper.disableSlot(i);
 
         if ((_direction < 0 && i == (NUM_TUBES - 1)) || (_direction > 0 && i == 0)) {
           setDuration(-1);
@@ -88,22 +84,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     }
   }
 
-  if (_cathodeDelay < 0) {
-    for (int i = 0; i < NUM_TUBES; i++) {
-      if (!_tubeSlotActive[i]) {
-        if (_totalCyclesLeft < 0) {
-          tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
-        }
-        continue;
-      }
-
-      _cathodeIndex[i] = (_cathodeIndex[i] + 1) % TubeCathodeCount[tubes[i].Type];
-      tubes[i].ActiveCathode = TubeCathodes[tubes[i].Type][_cathodeIndex[i]];
-    }
-
-    _cathodeDelay = DefaultCathodeDelayMs;
-    cathodeUpdate = true;
-  }
+  bool cathodeUpdate = _slotHelper.handleTick(tubes);
 
   return {cathodeUpdate, brightnessUpdate};
 }

@@ -1,4 +1,5 @@
 #include "animationBase.h"
+#include "slotHelper.h"
 #include "tubes.h"
 
 class SlotMachineAnimation : public Animation {
@@ -7,8 +8,6 @@ class SlotMachineAnimation : public Animation {
   const int BrightnessPhaseStepDeg = 360 / BrightnessPeriodSteps;
   const int DefaultCathodeDelayMs = 45;
 
-  int _cathodeDelay;
-  uint8_t _cathodeIndex[NUM_TUBES];
   int _tubePhaseOffsetDeg[NUM_TUBES];
   int _brightnessDelay;
   int _brightnessMin;
@@ -19,9 +18,10 @@ class SlotMachineAnimation : public Animation {
   
   int _direction; // -1 or 1
   // used for fading in and out
-  bool _tubeSlotActive[NUM_TUBES];
   int _totalCyclesLeft;
   int _tubeTriggerPhase;
+
+  SlotHelper _slotHelper;
  public:
   void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override;
   TickResult handleTick(Tube tubes[NUM_TUBES]) override;
