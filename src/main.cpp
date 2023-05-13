@@ -10,9 +10,10 @@ Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
   //new NameGlitchAnimation(),
   //new BasicFadeAnimation(),
-  new BubbleFadeAnimation(),
-  //new SlotMachineAnimation(),
-  //new RandomScanAnimation()
+  //new BubbleFadeAnimation(),
+  new SlotMachineAnimation(),
+  //new RandomScanAnimation(),
+  //new CylonScanAnimation(),
 };
 Animation *curAnimation;
 

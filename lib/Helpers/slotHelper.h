@@ -2,19 +2,22 @@
 
 #include "tubes.h"
 
+typedef struct {
+  bool isActive;
+  uint8_t cathodeIndex;
+  int cycleDelay;
+  int cycleDelayReset;
+} SlotState;
+
 class SlotHelper {
   private:
-    const int DefaultDelayMs = 45;
-    // todo: combine into struct
-    bool _tubeSlotActive[NUM_TUBES];
-    uint8_t _cathodeIndex[NUM_TUBES];
-    int _slotDelay;
+    static const int DefaultCycleDelayMs = 45;
+    SlotState _slotState[NUM_TUBES];
   public:
-    //SlotHelper();
     void disableSlot(int tubeIndex);
     void disableAllSlots();
-    void enableSlot(int tubeIndex);
-    void enableAllSlots(int tubeIndex);
+    void enableSlot(int tubeIndex, int cycleDelay = DefaultCycleDelayMs);
+    void enableAllSlots(int cycleDelay = DefaultCycleDelayMs);
     bool isSlotEnabled(int tubeIndex);
     bool handleTick(Tube tubes[NUM_TUBES]);
 };

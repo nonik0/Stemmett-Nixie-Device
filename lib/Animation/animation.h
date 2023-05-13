@@ -3,6 +3,7 @@
 #include "animationBase.h"
 #include "basicfadeAnimation.h"
 #include "bubbleFadeAnimation.h"
+#include "cylonScanAnimation.h"
 #include "nameAnimation.h"
 #include "nameGlitchAnimation.h"
 #include "randomScanAnimation.h"
