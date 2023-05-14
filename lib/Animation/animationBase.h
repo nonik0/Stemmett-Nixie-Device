@@ -2,6 +2,9 @@
 
 #include "tubes.h"
 
+// TODO: move somewhere else?
+typedef enum { Left, Right, DirectionCount } Direction;
+
 typedef struct {
   bool CathodeUpdate;
   bool BrightnessUpdate;

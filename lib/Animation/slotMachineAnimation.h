@@ -15,8 +15,8 @@ class SlotMachineAnimation : public Animation {
   int _brightnessInitialPhaseDeg;
   int _brightnessPhaseDeg;
   int _brightnessPhaseStepMs;
+  Direction _direction;
   
-  int _direction; // -1 or 1
   // used for fading in and out
   int _totalCyclesLeft;
   int _tubeTriggerPhase;

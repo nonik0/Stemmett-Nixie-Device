@@ -7,7 +7,7 @@ void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Animation::setDuration(25000);
   Animation::initialize(tubes, maxBrightness);
 
-  _activePhaseDuration = random(10000, 20000);
+  _activePhaseDuration = 5000; // random(10000, 20000);
   _eyeDelay = 0;
   int eyePeriod = random(600,1800);
   _eyeShiftDelay = eyePeriod / NUM_TUBES;
@@ -15,11 +15,18 @@ void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   _eyeDirection = _eyeIndex == 0 ? Left : Right;  
 }
 
+
+bool once = true;
 TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
   _activePhaseDuration--;
   _eyeDelay--;
+
+  if (once && _activePhaseDuration <= 0) {
+    once = false;
+    Serial.println("active phase complete");
+  }
 
   bool brightnessUpdate = false;
   if (_eyeDelay < 0) {
@@ -62,7 +69,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     _eyeDelay = _eyeShiftDelay;
   }
 
- brightnessUpdate |= _fadeHelper.handleTick(tubes);
+  brightnessUpdate |= _fadeHelper.handleTick(tubes);
   bool cathodeUpdate = _slotHelper.handleTick(tubes);
 
   return {brightnessUpdate, cathodeUpdate};

@@ -11,9 +11,9 @@ Animation* animations[NUM_ANIMATIONS] = {
   //new NameGlitchAnimation(),
   //new BasicFadeAnimation(),
   //new BubbleFadeAnimation(),
-  new SlotMachineAnimation(),
+  //new SlotMachineAnimation(),
   //new RandomScanAnimation(),
-  //new CylonScanAnimation(),
+  new CylonScanAnimation(),
 };
 Animation *curAnimation;
 
