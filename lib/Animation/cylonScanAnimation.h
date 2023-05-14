@@ -8,9 +8,12 @@
 class CylonScanAnimation : public Animation {
   private:
     int _activePhaseDuration;
+    bool _isActivePhase;
+    int _eyeFadeDuration;
     int _eyeShiftDelay;
     int _eyeIndex;
-    Direction _eyeDirection; // true = right, false = left
+    int _slotDelay;
+    Direction _eyeDirection;
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
 

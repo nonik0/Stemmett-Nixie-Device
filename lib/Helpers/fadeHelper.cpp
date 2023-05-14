@@ -32,21 +32,15 @@ bool FadeHelper::handleTick(Tube tubes[NUM_TUBES]) {
   bool update = false;
 
   for (int i = 0; i < NUM_TUBES; i++) {
-    if (_tubeFadeState[i].stepsLeft == 0) {
-      continue;
-    }
+    if (_tubeFadeState[i].stepsLeft > 0) {
+      _tubeFadeState[i].stepDelay--;
 
-    _tubeFadeState[i].stepDelay--;
-
-    if (_tubeFadeState[i].stepDelay < 0) {
-      tubes[i].Brightness += ((int)_tubeFadeState[i].targetBrightness - (int)tubes[i].Brightness) / (int)_tubeFadeState[i].stepsLeft;
-      _tubeFadeState[i].stepsLeft--;
-      
-      if (_tubeFadeState[i].stepsLeft > 0) {
+      if (_tubeFadeState[i].stepDelay < 0) {
+        tubes[i].Brightness += ((int)_tubeFadeState[i].targetBrightness - (int)tubes[i].Brightness) / (int)_tubeFadeState[i].stepsLeft;
+        _tubeFadeState[i].stepsLeft--;
         _tubeFadeState[i].stepDelay = FadeStepDelay;
+        update = true;
       }
-
-      update = true;
     }
   }
 

@@ -11,7 +11,7 @@ typedef struct {
 class FadeHelper {
   private:
     const int FadeStepDelay = 32; // TODO: needs to be different for different fade durations
-    TubeFadeState _tubeFadeState[NUM_TUBES]; // TODO: FadeHandler
+    TubeFadeState _tubeFadeState[NUM_TUBES];
   public:
     FadeHelper();
     bool isComplete(int tubeIndex = -1);

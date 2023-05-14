@@ -3,7 +3,6 @@
 #include "slotHelper.h"
 
 void SlotHelper::disableSlot(int tubeIndex) {
-  Serial.printf("Disabling slot %d\n", tubeIndex);
   _slotState[tubeIndex].isActive = false;
 }
 
@@ -14,7 +13,6 @@ void SlotHelper::disableAllSlots() {
 }
 
 void SlotHelper::enableSlot(int tubeIndex, int cycleDelay) {
-  Serial.printf("Enabling slot %d\n", tubeIndex);
   _slotState[tubeIndex].isActive = true;
   _slotState[tubeIndex].cathodeIndex = 0;
   _slotState[tubeIndex].cycleDelay = 0;
@@ -45,8 +43,8 @@ bool SlotHelper::handleTick(Tube tubes[NUM_TUBES]) {
         update = true;
       }
     }
+    // TODO: is this ideal or should we set when disabling? (so need more info)
     else if (tubes[i].ActiveCathode != tubes[i].PrimaryCathode) {
-      Serial.printf("Setting slot to default: %d\n", i);
       tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
       update = true;
     }

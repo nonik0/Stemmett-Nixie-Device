@@ -7,35 +7,34 @@ void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Animation::setDuration(25000);
   Animation::initialize(tubes, maxBrightness);
 
-  _activePhaseDuration = 5000; // random(10000, 20000);
+  _activePhaseDuration = random(10000, 20000);
+  _isActivePhase = true;
   _eyeDelay = 0;
-  int eyePeriod = random(600,1800);
-  _eyeShiftDelay = eyePeriod / NUM_TUBES;
+  _eyeShiftDelay = random(300,1500) / NUM_TUBES;
+  _eyeFadeDuration = random(_eyeShiftDelay, _eyeShiftDelay * 3);
   _eyeIndex = random(2) == 0 ? 0 : NUM_TUBES - 1;
-  _eyeDirection = _eyeIndex == 0 ? Left : Right;  
+  _eyeDirection = _eyeIndex == 0 ? Left : Right; 
+  _slotDelay = random(10,40);
 }
 
 
-bool once = true;
 TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
   _activePhaseDuration--;
   _eyeDelay--;
 
-  if (once && _activePhaseDuration <= 0) {
-    once = false;
-    Serial.println("active phase complete");
+  // end active phase on end tube
+  if (_activePhaseDuration < 0 && _isActivePhase && (_eyeIndex == 0 || _eyeIndex == NUM_TUBES-1)) {
+    _isActivePhase = false;
   }
 
-  bool brightnessUpdate = false;
   if (_eyeDelay < 0) {
-    // fade out current location of eye and disable slot
-
     _slotHelper.disableSlot(_eyeIndex);
 
-    if (_activePhaseDuration > 0) {
-      _fadeHelper.setTubeFade(_eyeIndex, 0, _eyeShiftDelay * 2);
+    // fade out only if active phase, otherwise leave at max brightness
+    if (_isActivePhase) {
+      _fadeHelper.setTubeFade(_eyeIndex, 0, _eyeFadeDuration);
     }
     else {
       bool allComplete = true;
@@ -49,7 +48,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       }
     }
 
-    // shift eye location
+    // shift eye location depending on direction and tube
     if (_eyeDirection == Left) {
       _eyeIndex++;
       if (_eyeIndex == NUM_TUBES - 1) {
@@ -63,14 +62,14 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       }
     }
 
-    // set eye slot and brightness
-    tubes[_eyeIndex].Brightness = _maxBrightness;
-    _slotHelper.enableSlot(_eyeIndex, 20);
+    // enable slot and set tube to max brightness
+    _slotHelper.enableSlot(_eyeIndex, _slotDelay);
+    _fadeHelper.setTubeFade(_eyeIndex, _maxBrightness, 0);   
     _eyeDelay = _eyeShiftDelay;
   }
 
-  brightnessUpdate |= _fadeHelper.handleTick(tubes);
   bool cathodeUpdate = _slotHelper.handleTick(tubes);
+  bool brightnessUpdate = _fadeHelper.handleTick(tubes);
 
-  return {brightnessUpdate, cathodeUpdate};
+  return {cathodeUpdate, brightnessUpdate};
 }
