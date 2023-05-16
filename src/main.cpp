@@ -8,12 +8,12 @@
 #define NUM_ANIMATIONS  2
 Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
-  //new NameGlitchAnimation(),
+  new NameGlitchAnimation(),
   //new BasicFadeAnimation(),
   //new BubbleFadeAnimation(),
   //new SlotMachineAnimation(),
   //new RandomScanAnimation(),
-  new CylonScanAnimation(),
+  //new CylonScanAnimation(),
 };
 Animation *curAnimation;
 

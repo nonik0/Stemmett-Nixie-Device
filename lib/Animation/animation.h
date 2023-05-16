@@ -6,6 +6,7 @@
 #include "cylonScanAnimation.h"
 #include "nameAnimation.h"
 #include "nameGlitchAnimation.h"
+#include "pulsarAnimation.h"
 #include "randomScanAnimation.h"
 #include "slotMachineAnimation.h"
 

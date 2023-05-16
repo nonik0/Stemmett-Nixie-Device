@@ -3,10 +3,21 @@
 #include "animationBase.h"
 #include "tubes.h"
 
-// typedef struct {
-//   uint8_t flickerCount;
-//   bool isComplete;
-// } Glitch;
+typedef struct {
+  uint8_t cathode;
+  int delay;
+  int onDelayRange;
+  int offDelayRange;
+} Glitch;
+
+Glitch glitch[NUM_TUBES] = {
+            {IN7_V, 0, 0, 0},
+          {IN4_1, 0, 0, 0},
+        {IN4_1, 0, 0, 0},
+      {IN7A_M, 0, 0, 0},
+    {IN7_Minus, 0, 0, 0},
+  {0xFF, 0, 0, 0},
+};
 
 class NameGlitchAnimation : public Animation {
   private:
@@ -16,7 +27,14 @@ class NameGlitchAnimation : public Animation {
       Serial.println("NameGlitchAnimation::initialize");
       Animation::initialize(tubes, maxBrightness);
       Animation::setDuration(2000);
-      _flickerDelay = 0;
+
+      for (int i = 0; i < NUM_TUBES; i++) {
+        if (glitch[i].cathode != 0xFF) {
+          glitch[i].delay = random(0, 1000);
+          glitch[i].offDelayRange = random(300, 700);
+          glitch[i].onDelayRange = random(10, 20);
+        }
+      }
     }
 
     TickResult handleTick(Tube tubes[NUM_TUBES]) override {
@@ -25,19 +43,23 @@ class NameGlitchAnimation : public Animation {
 
       bool update = false;
 
-      _flickerDelay--;
+      for (int i = 0; i < NUM_TUBES; i++) {
+        if (glitch[i].cathode != 0xFF) {
+          glitch[i].delay--;
 
-      if (_flickerDelay < 0) {
-        if (tubes[3].ActiveCathode == tubes[3].PrimaryCathode) {
-          tubes[3].ActiveCathode = IN7A_M;
-          _flickerDelay = 2 + random(0, 13);
-        }
-        else {
-          tubes[3].ActiveCathode = tubes[3].PrimaryCathode;
-          _flickerDelay = random(0, 500);
-        }
+          if (glitch[i].delay < 0) {
+            if (tubes[i].ActiveCathode == tubes[i].PrimaryCathode) {
+              tubes[i].ActiveCathode = glitch[i].cathode;
+              glitch[i].delay = random(2, glitch[i].onDelayRange);
+            }
+            else {
+              tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
+              glitch[i].delay = random(0, glitch[i].offDelayRange);
+            }
 
-        update = true;
+            update = true;
+          }
+        }
       }
 
       return {update, false};

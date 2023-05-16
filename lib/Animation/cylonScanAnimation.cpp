@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "cylonScanANimation.h"
+#include "cylonScanAnimation.h"
 
 void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Serial.println("CylonScanAnimation::initialize");
