@@ -3,7 +3,7 @@
 #include "tubes.h"
 
 // TODO: move somewhere else?
-typedef enum { Left, Right, DirectionCount } Direction;
+typedef enum { Left = 1, Right = -1, DirectionCount = 2 } Direction;
 
 typedef struct {
   bool CathodeUpdate;

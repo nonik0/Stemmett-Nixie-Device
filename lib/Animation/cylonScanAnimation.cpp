@@ -48,19 +48,15 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       }
     }
 
-    // shift eye location depending on direction and tube
-    if (_eyeDirection == Left) {
-      _eyeIndex++;
-      if (_eyeIndex == NUM_TUBES - 1) {
-        _eyeDirection = Right;
-      }
+    // shift eye location and change direction if at end
+    _eyeIndex += _eyeDirection;
+    if (_eyeIndex == 0) {
+      _eyeDirection = Left;
     }
-    else if (_eyeDirection == Right) {
-      _eyeIndex--;
-      if (_eyeIndex == 0) {
-        _eyeDirection = Left;
-      }
+    if (_eyeIndex == NUM_TUBES - 1) {
+      _eyeDirection = Right;
     }
+
 
     // enable slot and set tube to max brightness
     _slotHelper.enableSlot(_eyeIndex, _slotDelay);

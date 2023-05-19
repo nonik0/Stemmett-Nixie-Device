@@ -5,22 +5,30 @@
 #include "slotHelper.h"
 #include "tubes.h"
 
+typedef struct {
+  bool isActive;
+  int delay;
+  int index;
+  int brightness;
+  int speed; // delayReset
+  Direction direction;
+  int distanceLeft;
+  bool slotActive;
+} Ejection;
+
 class PulsarAnimation : public Animation {
   private:
+    static const int NumEjections = 1;
     int _activePhaseDuration;
     bool _isActivePhase;
 
-    int _pulsarEjectionDelay;
-    int _pulsarEjectionFrequency;
-    int _pulsarEjectionLength;
-    int _pulsearEjectionSpeed;
-    bool _pulsarEjectionActive; // TODO: multiple ejections?
-    bool _pulsarEjectionSlotActive;
+    Ejection ejection[NumEjections];
+    int _ejectionDelay;
+    int _ejectionDelayRange;
 
-    int _pulsarMovementDelay;
     int _pulsarIndex;
-    int _pulsarDelay;
-    //Direction _pulsarDirection;
+    int _movementDelay;
+    Direction _direction;
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
 
