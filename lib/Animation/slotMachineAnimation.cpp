@@ -17,7 +17,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   int brightnessPeriodMs = random(500,2500);
   _brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
   _totalCyclesLeft = random(3, 5);
-  _direction = (Direction)random(DirectionCount);
+  _direction = random(2) == 0 ? Left : Right;
 
   // want initial phase to be where the "trigger" tube is at max brightness (i.e. 0 deg phase with cos)
   int triggerTubePhaseOffset = (_direction < 0) ? _tubePhaseOffsetDeg[0] : _tubePhaseOffsetDeg[NUM_TUBES - 1];

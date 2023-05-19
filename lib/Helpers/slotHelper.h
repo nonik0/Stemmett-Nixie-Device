@@ -12,6 +12,7 @@ typedef struct {
 class SlotHelper {
   private:
     static const int DefaultCycleDelayMs = 45;
+    bool _resetToDefault = true;
     SlotState _slotState[NUM_TUBES];
   public:
     void disableSlot(int tubeIndex);
@@ -20,4 +21,5 @@ class SlotHelper {
     void enableAllSlots(int cycleDelay = DefaultCycleDelayMs);
     bool isSlotEnabled(int tubeIndex);
     bool handleTick(Tube tubes[NUM_TUBES]);
+    void resetDisabledSlotsToDefault(bool isEnabled);
 };

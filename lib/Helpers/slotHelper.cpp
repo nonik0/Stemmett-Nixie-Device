@@ -44,11 +44,15 @@ bool SlotHelper::handleTick(Tube tubes[NUM_TUBES]) {
       }
     }
     // TODO: is this ideal or should we set when disabling? (so need more info)
-    else if (tubes[i].ActiveCathode != tubes[i].PrimaryCathode) {
+    else if (_resetToDefault && tubes[i].ActiveCathode != tubes[i].PrimaryCathode) {
       tubes[i].ActiveCathode = tubes[i].PrimaryCathode;
       update = true;
     }
   }
 
   return update;
+}
+
+void SlotHelper::resetDisabledSlotsToDefault(bool isEnabled) {
+  _resetToDefault = isEnabled;
 }

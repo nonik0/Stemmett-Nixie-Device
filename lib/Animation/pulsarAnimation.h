@@ -27,8 +27,8 @@ class PulsarAnimation : public Animation {
     int _ejectionDelayRange;
 
     int _pulsarIndex;
-    int _movementDelay;
-    Direction _direction;
+    //int _movementDelay;
+    //Direction _direction;
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
 

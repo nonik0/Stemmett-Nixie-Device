@@ -69,9 +69,9 @@ void setup() {
   SPI.begin();
 
   // draws a lot of current, should do before enabling tubes
-  otaSetup();
+  //otaSetup();
 
-  rtcSetup();
+  //rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true);  // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, true);
@@ -94,7 +94,7 @@ void setup() {
 
 void loop() {
   handleRefresh();
-  ArduinoOTA.handle();
+  //ArduinoOTA.handle();
 }
 
 
