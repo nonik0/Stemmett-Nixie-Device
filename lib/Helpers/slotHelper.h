@@ -24,7 +24,7 @@ class SlotHelper {
   public:
     void disableCycling(int tubeIndex, bool resetToDefault = true);
     void enableCycling(int tubeIndex, int cycleDelay = DefaultCycleDelayMs);
-    bool isSlotEnabled(int tubeIndex);
+    bool isSlotCycling(int tubeIndex);
     void setPrimaryCathode(int tubeIndex);
     void setRandomCathode(int tubeIndex);
     bool handleTick(Tube tubes[NUM_TUBES]);

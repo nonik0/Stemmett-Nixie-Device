@@ -13,16 +13,20 @@ void SlotHelper::enableCycling(int tubeIndex, int cycleDelay) {
   _slotState[tubeIndex].cycleDelayReset = cycleDelay;
 }
 
-bool SlotHelper::isSlotEnabled(int tubeIndex) {
-  return _slotState[tubeIndex].action != Inactive;
+bool SlotHelper::isSlotCycling(int tubeIndex) {
+  if (tubeIndex < 0 || tubeIndex >= NUM_TUBES) {
+    return false;
+  }
+
+  return _slotState[tubeIndex].action == SeqCycle;
 }
 
 void SlotHelper::setPrimaryCathode(int tubeIndex) {
-  _slotState[tubeIndex].action == PrimaryCathode;
+  _slotState[tubeIndex].action = PrimaryCathode;
 }
 
 void SlotHelper::setRandomCathode(int tubeIndex) {
-  _slotState[tubeIndex].action == RandomCathode;
+  _slotState[tubeIndex].action = RandomCathode;
 }
 
 bool SlotHelper::handleTick(Tube tubes[NUM_TUBES]) {

@@ -19,7 +19,7 @@ void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   _pulsarIndex = 0;//(random(2) == 0) ? -2 : NUM_TUBES + 1;
   _speed = random(1000,4000);
   _movementDelay = _speed;
-  _direction = _pulsarIndex <= 0 ? Left : Right; 
+  _direction = _pulsarIndex <= 0 ? Left : Right;
 
   _ejectionDelay = 0;
   _ejectionDelayRange = 100;
@@ -28,8 +28,7 @@ void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   }
 }
 
-void PulsarAnimation::handlePulsarMovement(Tube tubes[NUM_TUBES])
-{
+void PulsarAnimation::handlePulsarMovement() {
   _movementDelay--;
   if (_movementDelay < 0) {
     if (isVisible(_pulsarIndex)) {
@@ -41,11 +40,16 @@ void PulsarAnimation::handlePulsarMovement(Tube tubes[NUM_TUBES])
     _movementDelay = _speed;
 
     if (isVisible(_pulsarIndex)) {
-      _slotHelper.enableCycling(_pulsarIndex, getSlotDelay(tubes[_pulsarIndex].Type));
+      _slotHelper.enableCycling(_pulsarIndex, 6); // TODO getSlotDelay(tubes[_pulsarIndex].Type);
       _fadeHelper.setTubeBrightness(_pulsarIndex, _maxBrightness);
     }
   }
- }
+
+  // TODO
+  if (_pulsarIndex < -1 || _pulsarIndex > NUM_TUBES) {
+    Animation::setDuration(-1);
+  }
+}
 
 void PulsarAnimation::handleEjectionSpawning() {
   _ejectionDelay--;
@@ -71,7 +75,7 @@ void PulsarAnimation::handleEjectionSpawning() {
       ejection[inactiveEjectionIndex].direction = random(2) == 0 ? Left : Right;
       ejection[inactiveEjectionIndex].distance = ejectionDistance;
       ejection[inactiveEjectionIndex].slotActive = random(2) == 0;
-      // todo: fade
+      // TODO: fade?
     }
 
     _ejectionDelay = _ejectionDelayRange; //random(0,_ejectionFrequencyRange); // TODO: random or periodic?
@@ -104,10 +108,7 @@ void PulsarAnimation::handleEjectionMovement() {
             _slotHelper.enableCycling(ejection[i].index, 50); // TODO: varied cycle time?
           }
           else {
-            //uint8_t newCathode = TubeCathodes[tubes[i].Type][random(TubeCathodeCount[tubes[i].Type])]; // TODO: helper function?
             _slotHelper.setRandomCathode(ejection[i].index);
-            //tubes[ejection[i].index].ActiveCathode = newCathode;
-            //cathodeUpdate = true;
           }
 
           _fadeHelper.setTubeBrightness(ejection[i].index, ejection[i].brightness);
@@ -123,7 +124,7 @@ void PulsarAnimation::handleEjectionMovement() {
 TickResult PulsarAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
-  handlePulsarMovement(tubes);
+  handlePulsarMovement();
   handleEjectionSpawning();
   handleEjectionMovement();
 

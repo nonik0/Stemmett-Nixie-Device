@@ -20,7 +20,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   _direction = random(2) == 0 ? Left : Right;
 
   // want initial phase to be where the "trigger" tube is at max brightness (i.e. 0 deg phase with cos)
-  int triggerTubePhaseOffset = (_direction < 0) ? _tubePhaseOffsetDeg[0] : _tubePhaseOffsetDeg[NUM_TUBES - 1];
+  int triggerTubePhaseOffset = (_direction == Left) ? _tubePhaseOffsetDeg[0] : _tubePhaseOffsetDeg[NUM_TUBES - 1];
   _brightnessInitialPhaseDeg = (360 - triggerTubePhaseOffset) % 360;
   _brightnessPhaseDeg = _brightnessInitialPhaseDeg;
   _tubeTriggerPhase = 0; // cos max phase
@@ -48,7 +48,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     for (int i = 0; i < NUM_TUBES; i++) {
       int tubePhaseDeg = (_brightnessPhaseDeg + _tubePhaseOffsetDeg[i]) % 360;
 
-      if (!_slotHelper.isSlotEnabled(i)) {
+      if (!_slotHelper.isSlotCycling(i)) {
         // activate tubes at starting phase of left-most tube
         if (tubePhaseDeg == _tubeTriggerPhase && _totalCyclesLeft > 0) {
           _slotHelper.enableCycling(i);
@@ -75,8 +75,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       tubes[i].Brightness = _brightnessMin + 0.5 * (_brightnessMax - _brightnessMin) * (1 + cos(tubePhaseRad));
     }
 
-    int directionMultiplier = (_direction == Left) ? -1 : 1;
-    _brightnessPhaseDeg = (360 + _brightnessPhaseDeg + _direction * BrightnessPhaseStepDeg) % 360;
+    _brightnessPhaseDeg = (360 + _brightnessPhaseDeg + -_direction * BrightnessPhaseStepDeg) % 360;
     _brightnessDelay = _brightnessPhaseStepMs;
     brightnessUpdate = true;
 

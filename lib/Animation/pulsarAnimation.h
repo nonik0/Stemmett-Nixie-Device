@@ -14,6 +14,7 @@ typedef struct {
   Direction direction;
   int distance;
   bool slotActive;
+  int slotDelay;
 } Ejection;
 
 class PulsarAnimation : public Animation {
@@ -29,7 +30,7 @@ class PulsarAnimation : public Animation {
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
 
-    void handlePulsarMovement(Tube tubes[NUM_TUBES]);
+    void handlePulsarMovement();
     void handleEjectionSpawning();
     void handleEjectionMovement();
     bool isVisible(int index); 
