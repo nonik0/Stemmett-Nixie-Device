@@ -44,7 +44,7 @@ TickResult BubbleFadeAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       activeBubbleCountTarget = NUM_TUBES - tubeCompletedCount;
     }
     else {
-      Animation::setDuration(-1);
+      setComplete();
       return {false, update};
     }
   }

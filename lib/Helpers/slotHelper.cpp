@@ -3,10 +3,12 @@
 #include "slotHelper.h"
 
 void SlotHelper::disableCycling(int tubeIndex, bool resetToDefault) {
+  //Serial.printf("SlotHelper::disableCycling %d\n", tubeIndex);
   _slotState[tubeIndex].action = resetToDefault ? PrimaryCathode : RandomCathode;
 }
 
 void SlotHelper::enableCycling(int tubeIndex, int cycleDelay) {
+  //Serial.printf("SlotHelper::enableCycling %d\n", tubeIndex);
   _slotState[tubeIndex].action = SeqCycle;
   _slotState[tubeIndex].cathodeIndex = 0;
   _slotState[tubeIndex].cycleDelay = 0;

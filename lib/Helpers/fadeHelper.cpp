@@ -23,12 +23,14 @@ bool FadeHelper::isComplete(int tubeIndex) {
 }
 
 void FadeHelper::setTubeBrightness(int tubeIndex, int targetBrightness) {
+  //printf("FadeHelper::setTubeBrightness %d %d\n", tubeIndex, targetBrightness);
   _tubeFadeState[tubeIndex].targetBrightness = targetBrightness;
   _tubeFadeState[tubeIndex].stepDelay = 0;
   _tubeFadeState[tubeIndex].stepsLeft = 1;
 }
 
 void FadeHelper::setTubeFade(int tubeIndex, int targetBrightness, int durationMs, int initialDelay) {
+  //printf("FadeHelper::setTubeFade %d %d %d %d\n", tubeIndex, targetBrightness, durationMs, initialDelay)
   _tubeFadeState[tubeIndex].targetBrightness = targetBrightness;
   _tubeFadeState[tubeIndex].stepDelay = initialDelay;
   _tubeFadeState[tubeIndex].stepsLeft = max(1,  (int) ceil(durationMs / FadeStepDelay));

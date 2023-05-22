@@ -63,7 +63,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
         _slotHelper.setPrimaryCathode(i);
 
         if ((_direction == Left && i == (NUM_TUBES - 1)) || (_direction == Right && i == 0)) {
-          setDuration(-1);
+          setComplete();
         }
 
         continue;

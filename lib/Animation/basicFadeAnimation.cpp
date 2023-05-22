@@ -51,7 +51,7 @@ void BasicFadeAnimation::setNextProgression() {
       setRandomFadePattern(_maxBrightness, randomDelay);
       break;
     case FadeComplete:
-      setDuration(-1);
+      setComplete();
       break;
   }
 }

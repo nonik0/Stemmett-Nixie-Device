@@ -56,7 +56,7 @@ TickResult RandomScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       }
 
       if (isComplete) {
-        Animation::setDuration(-1);
+        setComplete();
       }
     }
 

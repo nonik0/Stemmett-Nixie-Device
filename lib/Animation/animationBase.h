@@ -21,5 +21,6 @@ class Animation {
   virtual void initialize(Tube tubes[NUM_TUBES], int maxBrightness) = 0;
   virtual TickResult handleTick(Tube tubes[NUM_TUBES]) = 0;
   bool isComplete();
+  void setComplete();
   void setDuration(int durationMs);
 };

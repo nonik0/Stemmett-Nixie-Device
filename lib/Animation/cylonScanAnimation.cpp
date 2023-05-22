@@ -43,7 +43,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       }
 
       if (allComplete) {
-        Animation::setDuration(-1);
+        setComplete();
         return {true, true};
       }
     }
