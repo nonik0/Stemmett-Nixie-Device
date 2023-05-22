@@ -15,6 +15,7 @@ class FadeHelper {
   public:
     FadeHelper();
     bool isComplete(int tubeIndex = -1);
+    void setTubeBrightness(int tubeIndex, int targetBrightness, int initialDelay = 0);
     void setTubeFade(int tubeIndex, int targetBrightness, int durationMs, int initialDelay = 0);
     bool handleTick(Tube tubes[NUM_TUBES]);
 };

@@ -30,7 +30,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   }
 
   if (_eyeDelay < 0) {
-    _slotHelper.disableSlot(_eyeIndex);
+    _slotHelper.disableCycling(_eyeIndex);
 
     // fade out only if active phase, otherwise leave at max brightness
     if (_isActivePhase) {
@@ -59,7 +59,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
 
 
     // enable slot and set tube to max brightness
-    _slotHelper.enableSlot(_eyeIndex, _slotDelay);
+    _slotHelper.enableCycling(_eyeIndex, _slotDelay);
     _fadeHelper.setTubeFade(_eyeIndex, _maxBrightness, 0);   
     _eyeDelay = _eyeShiftDelay;
   }

@@ -22,6 +22,12 @@ bool FadeHelper::isComplete(int tubeIndex) {
   return _tubeFadeState[tubeIndex].stepsLeft == 0;
 }
 
+void FadeHelper::setTubeBrightness(int tubeIndex, int targetBrightness, int initialDelay) {
+  _tubeFadeState[tubeIndex].targetBrightness = targetBrightness;
+  _tubeFadeState[tubeIndex].stepDelay = initialDelay;
+  _tubeFadeState[tubeIndex].stepsLeft = 0;
+}
+
 void FadeHelper::setTubeFade(int tubeIndex, int targetBrightness, int durationMs, int initialDelay) {
   _tubeFadeState[tubeIndex].targetBrightness = targetBrightness;
   _tubeFadeState[tubeIndex].stepDelay = initialDelay;

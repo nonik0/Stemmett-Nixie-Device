@@ -12,27 +12,28 @@ typedef struct {
   int brightness;
   int speed; // delayReset
   Direction direction;
-  int distanceLeft;
+  int distance;
   bool slotActive;
 } Ejection;
 
 class PulsarAnimation : public Animation {
   private:
-    static const int NumEjections = 1;
-    int _activePhaseDuration;
-    bool _isActivePhase;
-
+    int _pulsarIndex;
+    int _movementDelay;
+    int _speed;   
+    Direction _direction;
+    static const int NumEjections = 3;
     Ejection ejection[NumEjections];
     int _ejectionDelay;
     int _ejectionDelayRange;
-
-    int _pulsarIndex;
-    //int _movementDelay;
-    //Direction _direction;
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
 
-    int _eyeDelay;
+    void handlePulsarMovement(Tube tubes[NUM_TUBES]);
+    void handleEjectionSpawning();
+    void handleEjectionMovement();
+    bool isVisible(int index); 
+    int getSlotDelay(TubeType tubeType);
   public:
     void initialize(Tube tubes[NUM_TUBES], int maxBrightness);
     TickResult handleTick(Tube tubes[NUM_TUBES]);

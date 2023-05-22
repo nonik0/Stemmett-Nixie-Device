@@ -5,16 +5,16 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-#define NUM_ANIMATIONS  2
+#define NUM_ANIMATIONS  3
 Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
   //new NameGlitchAnimation(),
   //new BasicFadeAnimation(),
   //new BubbleFadeAnimation(),
-  //new SlotMachineAnimation(),
+  new SlotMachineAnimation(),
   //new RandomScanAnimation(),
-  //new CylonScanAnimation(),
-  new PulsarAnimation(),
+  new CylonScanAnimation(),
+  //new PulsarAnimation(),
 };
 Animation *curAnimation;
 

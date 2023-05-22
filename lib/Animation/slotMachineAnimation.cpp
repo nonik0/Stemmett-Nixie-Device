@@ -51,7 +51,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       if (!_slotHelper.isSlotEnabled(i)) {
         // activate tubes at starting phase of left-most tube
         if (tubePhaseDeg == _tubeTriggerPhase && _totalCyclesLeft > 0) {
-          _slotHelper.enableSlot(i);
+          _slotHelper.enableCycling(i);
         }
         else {
           continue;
@@ -60,7 +60,7 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       
       if (_totalCyclesLeft < 0 && tubePhaseDeg == _tubeTriggerPhase) {
         tubes[i].Brightness = _maxBrightness;
-        _slotHelper.disableSlot(i);
+        _slotHelper.setPrimaryCathode(i);
 
         if ((_direction == Left && i == (NUM_TUBES - 1)) || (_direction == Right && i == 0)) {
           setDuration(-1);

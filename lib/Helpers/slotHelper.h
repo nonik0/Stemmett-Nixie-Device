@@ -2,8 +2,16 @@
 
 #include "tubes.h"
 
+typedef enum {
+  Inactive,
+  SeqCycle,
+  //RandomCycle, // TODO: implement
+  RandomCathode,
+  PrimaryCathode
+} SlotAction;
+
 typedef struct {
-  bool isActive;
+  SlotAction action;
   uint8_t cathodeIndex;
   int cycleDelay;
   int cycleDelayReset;
@@ -12,14 +20,12 @@ typedef struct {
 class SlotHelper {
   private:
     static const int DefaultCycleDelayMs = 45;
-    bool _resetToDefault = true;
     SlotState _slotState[NUM_TUBES];
   public:
-    void disableSlot(int tubeIndex);
-    void disableAllSlots();
-    void enableSlot(int tubeIndex, int cycleDelay = DefaultCycleDelayMs);
-    void enableAllSlots(int cycleDelay = DefaultCycleDelayMs);
+    void disableCycling(int tubeIndex, bool resetToDefault = true);
+    void enableCycling(int tubeIndex, int cycleDelay = DefaultCycleDelayMs);
     bool isSlotEnabled(int tubeIndex);
+    void setPrimaryCathode(int tubeIndex);
+    void setRandomCathode(int tubeIndex);
     bool handleTick(Tube tubes[NUM_TUBES]);
-    void resetDisabledSlotsToDefault(bool isEnabled);
 };
