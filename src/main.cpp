@@ -5,15 +5,15 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-#define NUM_ANIMATIONS 2
+#define NUM_ANIMATIONS 7 //2
 Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
-  //new NameGlitchAnimation(),
-  //new BasicFadeAnimation(),
-  //new BubbleFadeAnimation(),
-  //new SlotMachineAnimation(),
+  new NameGlitchAnimation(),
+  new BasicFadeAnimation(),
+  new BubbleFadeAnimation(),
+  new SlotMachineAnimation(),
   //new RandomScanAnimation(),
-  //new CylonScanAnimation(),
+  new CylonScanAnimation(),
   new PulsarAnimation(),
 };
 Animation *curAnimation;
@@ -29,7 +29,7 @@ void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
 }
 
-
+int i = 0;
 void handleRefresh() {
   if (refreshTick) {
     refreshTick = false;
@@ -37,9 +37,10 @@ void handleRefresh() {
     // if animation is complete, initialize new animation
     if (curAnimation->isComplete()) {
       curAnimation = (curAnimation == animations[0])
-        ? animations[random(1, NUM_ANIMATIONS)]
+        ? //animations[random(1, NUM_ANIMATIONS)]
+          animations[1 + (i++)%(NUM_ANIMATIONS-1)]
         : animations[0];
-      curAnimation->initialize(Tubes, 152);
+      curAnimation->initialize(Tubes, 30);
     }
 
     TickResult result = curAnimation->handleTick(Tubes);

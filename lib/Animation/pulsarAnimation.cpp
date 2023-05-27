@@ -85,7 +85,7 @@ void PulsarAnimation::handleEjectionSpawning() {
         ejection[inactiveEjectionIndex].direction = (Direction)-_pulsarDirection;
         ejection[inactiveEjectionIndex].distance = NUM_TUBES + StartOffset;
         ejection[inactiveEjectionIndex].slotActive = true;
-        ejection[inactiveEjectionIndex].speed = random(70,130);
+        ejection[inactiveEjectionIndex].speed = random(70, 130);
         
         delay = 0x7FFFFFFF;
       }
@@ -121,7 +121,7 @@ void PulsarAnimation::handleEjectionMovement() {
           if (isVisible(ejection[i].index)) {
             // new tube positions updates
             if (ejection[i].slotActive) {
-              _slotHelper.enableCycling(ejection[i].index, 50); // TODO: varied cycle time?
+              _slotHelper.enableCycling(ejection[i].index, random(30, 70));
             }
             else {
               _slotHelper.setRandomCathode(ejection[i].index);

@@ -5,7 +5,7 @@
 void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Serial.println("SlotMachineAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
-  Animation::setDuration(14440);
+  Animation::setDuration(26000);
 
   _brightnessDelay = 0;
 
@@ -16,7 +16,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   // random phase direction, length and number of periods
   int brightnessPeriodMs = random(500,2500);
   _brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
-  _totalCyclesLeft = random(3, 5);
+  _totalCyclesLeft = random(6, 10);
   _direction = random(2) == 0 ? Left : Right;
 
   // want initial phase to be where the "trigger" tube is at max brightness (i.e. 0 deg phase with cos)

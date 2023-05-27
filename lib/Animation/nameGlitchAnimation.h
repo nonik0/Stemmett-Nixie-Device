@@ -16,7 +16,7 @@ Glitch glitch[NUM_TUBES] = {
         {IN4_1, 0, 0, 0},
       {IN7A_M, 0, 0, 0},
     {IN7_Minus, 0, 0, 0},
-  {0xFF, 0, 0, 0},
+  {IN7B_Hz, 0, 0, 0},
 };
 
 class NameGlitchAnimation : public Animation {
@@ -26,7 +26,7 @@ class NameGlitchAnimation : public Animation {
     void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override {
       Serial.println("NameGlitchAnimation::initialize");
       Animation::initialize(tubes, maxBrightness);
-      Animation::setDuration(2000);
+      Animation::setDuration(10000);
 
       for (int i = 0; i < NUM_TUBES; i++) {
         if (glitch[i].cathode != 0xFF) {
