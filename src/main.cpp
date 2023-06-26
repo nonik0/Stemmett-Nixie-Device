@@ -5,16 +5,17 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-#define NUM_ANIMATIONS 7 //2
+#define NUM_ANIMATIONS 2 //7
 Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
-  new NameGlitchAnimation(),
-  new BasicFadeAnimation(),
-  new BubbleFadeAnimation(),
-  new SlotMachineAnimation(),
-  //new RandomScanAnimation(),
-  new CylonScanAnimation(),
-  new PulsarAnimation(),
+  // new NameGlitchAnimation(),
+  // new BasicFadeAnimation(),
+  // new BubbleFadeAnimation(),
+  // new SlotMachineAnimation(),
+  // //new RandomScanAnimation(),
+  // new CylonScanAnimation(),
+  // new PulsarAnimation(),
+  new RainAnimation(),
 };
 Animation *curAnimation;
 
@@ -40,7 +41,7 @@ void handleRefresh() {
         ? //animations[random(1, NUM_ANIMATIONS)]
           animations[1 + (i++)%(NUM_ANIMATIONS-1)]
         : animations[0];
-      curAnimation->initialize(Tubes, 30);
+      curAnimation->initialize(Tubes, 128);
     }
 
     TickResult result = curAnimation->handleTick(Tubes);

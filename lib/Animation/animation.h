@@ -7,6 +7,7 @@
 #include "nameAnimation.h"
 #include "nameGlitchAnimation.h"
 #include "pulsarAnimation.h"
+#include "rainAnimation.h"
 #include "randomScanAnimation.h"
 #include "slotMachineAnimation.h"
 
