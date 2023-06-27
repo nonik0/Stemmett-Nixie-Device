@@ -48,8 +48,11 @@ bool SlotHelper::handleTick(Tube tubes[NUM_TUBES]) {
     // else if (_slotState[i].action == RandomCycle) {
     // }
     else if (_slotState[i].action == RandomCathode) {
-      //tubes[i].ActiveCathode = TubeCathodes[tubes[i].Type][_slotState[i].cathodeIndex];
-      tubes[i].ActiveCathode = TubeCathodes[tubes[i].Type][random(TubeCathodeCount[tubes[i].Type])];
+      // make sure to select a different cathode (TODO: make option??)
+      uint8_t oldCathode = tubes[i].ActiveCathode;
+      do {
+        tubes[i].ActiveCathode = TubeCathodes[tubes[i].Type][random(TubeCathodeCount[tubes[i].Type])];
+      } while (tubes[i].ActiveCathode == oldCathode);
       _slotState[i].action = Inactive;
       update = true;
     }
