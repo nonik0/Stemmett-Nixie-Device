@@ -17,7 +17,6 @@ void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   _slotDelay = random(10,40);
 }
 
-
 TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
   Animation::handleTick(tubes);
 
@@ -53,10 +52,9 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     if (_eyeIndex == 0) {
       _eyeDirection = Left;
     }
-    if (_eyeIndex == NUM_TUBES - 1) {
+    else if (_eyeIndex == NUM_TUBES - 1) {
       _eyeDirection = Right;
     }
-
 
     // enable slot and set tube to max brightness
     _slotHelper.enableCycling(_eyeIndex, _slotDelay);

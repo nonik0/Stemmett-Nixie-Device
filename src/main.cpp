@@ -10,12 +10,13 @@ Animation* animations[NUM_ANIMATIONS] = {
   new NameAnimation(),
   // new NameGlitchAnimation(),
   // new BasicFadeAnimation(),
-  // new BubbleFadeAnimation(),
+  //new GhostAnimation(),
   // new SlotMachineAnimation(),
   // //new RandomScanAnimation(),
   // new CylonScanAnimation(),
   // new PulsarAnimation(),
-  new RainAnimation(),
+  //new RainAnimation(),
+  new BubbleAnimation(),
 };
 Animation *curAnimation;
 

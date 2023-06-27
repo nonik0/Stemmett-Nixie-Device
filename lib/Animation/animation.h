@@ -2,8 +2,9 @@
 
 #include "animationBase.h"
 #include "basicfadeAnimation.h"
-#include "bubbleFadeAnimation.h"
+#include "bubbleAnimation.h"
 #include "cylonScanAnimation.h"
+#include "ghostAnimation.h"
 #include "nameAnimation.h"
 #include "nameGlitchAnimation.h"
 #include "pulsarAnimation.h"
