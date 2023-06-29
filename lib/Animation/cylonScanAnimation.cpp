@@ -58,7 +58,7 @@ TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
 
     // enable slot and set tube to max brightness
     _slotHelper.enableCycling(_eyeIndex, _slotDelay);
-    _fadeHelper.setTubeFade(_eyeIndex, _maxBrightness, 0);   
+    _fadeHelper.setTubeBrightness(_eyeIndex, _maxBrightness);   
     _eyeDelay = _eyeShiftDelay;
   }
 

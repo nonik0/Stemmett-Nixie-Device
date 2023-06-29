@@ -57,11 +57,11 @@ TickResult RainAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       _raindrops[tubeIndex].fadeDuration = random(100, 600);
       _raindrops[tubeIndex].initialBrightness = random(0.7 * _maxBrightness, _maxBrightness);
       
-      _fadeHelper.setTubeFade(tubeIndex, _raindrops[tubeIndex].initialBrightness, 0);
+      _fadeHelper.setTubeBrightness(tubeIndex, _raindrops[tubeIndex].initialBrightness);
       _slotHelper.setRandomCathode(tubeIndex);
     }
     else {
-      _fadeHelper.setTubeFade(tubeIndex, _maxBrightness, 0);
+      _fadeHelper.setTubeBrightness(tubeIndex, _maxBrightness);
       _slotHelper.setPrimaryCathode(tubeIndex);
     }
 

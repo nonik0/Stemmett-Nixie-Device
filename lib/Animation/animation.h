@@ -10,6 +10,7 @@
 #include "pulsarAnimation.h"
 #include "rainAnimation.h"
 #include "randomScanAnimation.h"
+#include "scanAnimation.h"
 #include "slotMachineAnimation.h"
 
 // animation ideas:
