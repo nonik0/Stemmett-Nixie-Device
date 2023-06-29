@@ -8,7 +8,7 @@ void ScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
   Animation::initialize(tubes, maxBrightness);
 
   _isScanComplete = true;
-  _isSlotScan = true;
+  _isSlotScan = random(4) > 0;
   _scanDelay = 0;
   _scanInactiveBrightness = _maxBrightness / random(4,8);
   _scanIndex = random(2) == 0 ? -1 : NUM_TUBES;

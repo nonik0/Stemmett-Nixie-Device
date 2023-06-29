@@ -10,6 +10,8 @@ typedef struct {
   int offDelayRange;
 } Glitch;
 
+
+#if defined(STELLA)
 Glitch glitch[NUM_TUBES] = {
             {IN7_V, 0, 0, 0},
           {IN4_1, 0, 0, 0},
@@ -18,6 +20,16 @@ Glitch glitch[NUM_TUBES] = {
     {IN7_Minus, 0, 0, 0},
   {IN7B_Hz, 0, 0, 0},
 };
+#elif defined(EMMETT)
+Glitch glitch[NUM_TUBES] = {
+            {IN7_Minus, 0, 0, 0},
+          {IN7_Minus, 0, 0, 0},
+        {IN7_M, 0, 0, 0},
+      {IN7_M, 0, 0, 0},
+    {IN7_M, 0, 0, 0},
+  {IN7_M, 0, 0, 0},
+};
+#endif
 
 class NameGlitchAnimation : public Animation {
   private:
