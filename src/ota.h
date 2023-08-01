@@ -1,19 +1,11 @@
 #include <ArduinoOTA.h>
 #include <ESPmDNS.h>
-#include <WiFi.h>
-#include <WiFiUdp.h>
+// #include <WiFi.h>
+// #include <WiFiUdp.h>
 
-#include "secrets.h"
 
 void otaSetup() {
-  Serial.println("otaSetup()");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
-  }
+  Serial.println("->otaSetup()");
 
   ArduinoOTA
       .onStart([]() {
@@ -44,10 +36,7 @@ void otaSetup() {
         else if (error == OTA_END_ERROR)
           Serial.println("End Failed");
       });
-
   ArduinoOTA.begin();
 
-  Serial.println("Ready");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("<-otaSetup()");
 }
