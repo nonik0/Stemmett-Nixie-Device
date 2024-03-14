@@ -18,4 +18,6 @@ void Animation::setComplete() {
   _durationMs = -1;
 }
 
+void Animation::setBrightness(int brightness) { _maxBrightness = brightness; }
+
 void Animation::setDuration(int durationMs) { _durationMs = durationMs; }

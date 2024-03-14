@@ -14,7 +14,7 @@ class Animation {
  private:
   int _durationMs = 3600;
  protected:
-  int _maxBrightness;
+  volatile int _maxBrightness;
  public:
   // TODO: can do ctor instead of initialize impl?
   virtual ~Animation() = default;
@@ -22,5 +22,6 @@ class Animation {
   virtual TickResult handleTick(Tube tubes[NUM_TUBES]) = 0;
   bool isComplete();
   void setComplete();
+  void setBrightness(int brightness);
   void setDuration(int durationMs);
 };

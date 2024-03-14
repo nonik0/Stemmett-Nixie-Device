@@ -8,14 +8,14 @@
 typedef struct {
   bool isActive;
   int fadeDuration;
-} Bubble;
+} Bubble_t;
 
 class BubbleAnimation : public Animation {
   private:
     int _activePhaseDuration;
     int _newBubbleCooldown;
     int _baseCooldown;
-    Bubble _bubble[NUM_TUBES];
+    Bubble_t _bubble[NUM_TUBES];
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
   public:

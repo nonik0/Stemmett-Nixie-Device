@@ -7,14 +7,14 @@ typedef struct {
   int targetBrightnessLow;
   int targetBrightnessHigh;
   int fadeDuration;
-} Ghost;
+} Ghost_t;
 
 class GhostAnimation : public Animation {
   private:
     int _activeGhostCount;
     int _activePhaseDuration;
     int _newGhostCooldown;
-    Ghost _ghost[NUM_TUBES];
+    Ghost_t _ghost[NUM_TUBES];
     FadeHelper _fadeHelper;
   public:
     void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override;
