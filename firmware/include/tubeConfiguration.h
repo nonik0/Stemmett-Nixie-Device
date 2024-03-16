@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(STELLA)
 Tube Tubes[NUM_TUBES] = {
             {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},

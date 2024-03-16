@@ -3,7 +3,7 @@
 #include "bubbleAnimation.h"
 
 void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("BubbleAnimation::initialize");
+  log_i("BubbleAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(55000);
 
@@ -45,7 +45,7 @@ TickResult BubbleAnimation::handleTick(Tube tubes[NUM_TUBES]) {
 
   for (int i = 0; i < NUM_TUBES; i++) {
     if (tubes[i].Brightness == 0) {
-      //if (!isActivePhase) printf("fade in bubble %d\n", i);
+      //if (!isActivePhase) log_i("fade in bubble %d", i);
       _fadeHelper.setTubeFade(i, _maxBrightness, _bubble[i].fadeDuration);
       _slotHelper.setRandomCathode(i);
     }
@@ -68,7 +68,7 @@ TickResult BubbleAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       : _bubble[tubeIndex].isActive && random(NUM_TUBES - tubeCompletedCount) != 0;
 
     if (_bubble[tubeIndex].isActive) {
-      //if (!isActivePhase) Serial.printf("new bubble %d\n", tubeIndex);
+      //if (!isActivePhase) log_i("new bubble %", tubeIndex);
       _bubble[tubeIndex].fadeDuration = random(_baseCooldown*5, _baseCooldown*10);
       _fadeHelper.setTubeFade(tubeIndex, 0, 0);
     }

@@ -8,7 +8,7 @@ class NameAnimation : public Animation {
     bool  _firstTick;
   public:
     void initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-      Serial.printf("NameAnimation::initialize(%d)\n", maxBrightness);
+      Serial.printf("NameAnimation::initialize(%d)", maxBrightness);
       Animation::initialize(tubes, maxBrightness);
       Animation::setDuration(2000);
       _firstTick = true;

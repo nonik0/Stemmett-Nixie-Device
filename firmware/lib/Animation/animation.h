@@ -28,7 +28,13 @@ enum AnimationType {
   Scan,
   SlotMachine,
   NumAnimations,
-  Invalid
+  Invalid,
+};
+
+
+enum TransitionBehavior {
+  Random,
+  Sequential,
 };
 
 AnimationType parseAnimationType(String animationType) {

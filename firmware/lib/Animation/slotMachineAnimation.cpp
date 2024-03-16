@@ -3,7 +3,7 @@
 #include "slotMachineAnimation.h"
 
 void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("SlotMachineAnimation::initialize");
+  log_i("SlotMachineAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(26000);
 
@@ -29,7 +29,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   _brightnessMin = random(-50, -10);
   _brightnessMax = _maxBrightness;
 
-  //Serial.printf("_brightnessMin: %d\n", _brightnessMin);
+  //log_i("_brightnessMin: %d", _brightnessMin);
   // original values:
   //_brightnessMin = -95;
   //_brightnessMax = 255; // TODO

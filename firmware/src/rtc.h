@@ -1,3 +1,6 @@
+#pragma once
+
+#include <ESP32Time.h>
 #include <RTClib.h>
 
 // NTP config
@@ -5,23 +8,19 @@ const char* NtpServer = "pool.ntp.org";
 const long GmtOffsetSecs = -28800;
 const int DstOffsetSecs = 3600;
 
+ESP32Time espRtc;
 RTC_DS3231 rtc;
 
-void rtcSetup() {
-  Serial.println("rtcSetup()");
+bool rtcInit = false;
 
-  if (!rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    return;
-  }
-
-  configTime(GmtOffsetSecs, DstOffsetSecs, NtpServer);
-
+void rtcSyncTime() {
   char format[] = "hh:mm:ss";
-  Serial.printf("DS3231: %s\n", rtc.now().toString(format));
+  if (rtcInit)
+    log_i("DS3231: %s", rtc.now().toString(format));
+  log_i("ESP: %s", espRtc.getTime());
 
   struct tm timeinfo;
-  getLocalTime(&timeinfo); // this adjusts ESP32 RTC
+  getLocalTime(&timeinfo);
 
   int yr = timeinfo.tm_year + 1900;
   int mt = timeinfo.tm_mon + 1;
@@ -30,7 +29,23 @@ void rtcSetup() {
   int mi = timeinfo.tm_min;
   int se = timeinfo.tm_sec;
 
-  Serial.printf("   NTP: %02u:%02u:%02u\n", hr, mi, se);
-  Serial.println("Adjusting DS3231 with NTP time");
-  rtc.adjust(DateTime(yr, mt, dy, hr, mi, se));
+  log_i("NTP: %02u:%02u:%02u", hr, mi, se);
+
+  log_i("Adjusting ESP32 RTC with NTP time");
+  espRtc.setTimeStruct(timeinfo);
+
+  if (rtcInit) {
+    log_i("Adjusting DS3231 with NTP time");
+    rtc.adjust((yr, mt, dy, hr, mi, se));
+  }
+}
+
+void rtcSetup() {
+  log_i("rtcSetup()");
+
+  if (!(rtcInit = rtc.begin()))
+    log_w("Couldn't find RTC");
+
+  configTime(GmtOffsetSecs, DstOffsetSecs, NtpServer);
+  rtcSyncTime();
 }

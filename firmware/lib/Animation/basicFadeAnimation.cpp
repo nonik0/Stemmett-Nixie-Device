@@ -37,9 +37,9 @@ int* BasicFadeAnimation::getRandomTubeOrder() {
 }
 
 void BasicFadeAnimation::setNextProgression() {
-  Serial.printf("FadeProgression:%d->", _fadeProgression);
+  log_i("FadeProgression:%d->", _fadeProgression);
   _fadeProgression = (FadeProgression)((int)_fadeProgression + 1);
-  Serial.println(_fadeProgression);
+  log_i("%d", _fadeProgression);
 
   int randomDelay = (_fadeProgression == FadeIn) ? random(1000) : 0;
   switch (_fadeProgression) {
@@ -67,7 +67,7 @@ void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialD
 }
 
 void BasicFadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("BasicFadeAnimation::initialize");
+  log_i("BasicFadeAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(30000);
   _fadeProgression = FadeStart;

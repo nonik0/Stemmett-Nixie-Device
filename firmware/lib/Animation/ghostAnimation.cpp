@@ -3,7 +3,7 @@
 #include "ghostAnimation.h"
 
 void GhostAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("GhostAnimation::initialize");
+  log_i("GhostAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(25000);
 

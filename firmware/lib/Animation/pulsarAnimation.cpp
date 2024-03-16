@@ -7,7 +7,7 @@ bool PulsarAnimation::isVisible(int index) {
 }
 
 void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("PulsarAnimation::initialize");
+  log_i("PulsarAnimation::initialize");
   Animation::setDuration(30000);
   Animation::initialize(tubes, maxBrightness);
 

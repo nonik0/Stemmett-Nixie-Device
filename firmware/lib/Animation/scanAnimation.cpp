@@ -3,7 +3,7 @@
 #include "scanAnimation.h"
 
 void ScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  Serial.println("ScanAnimation::initialize");
+  log_i("ScanAnimation::initialize");
   Animation::setDuration(25000);
   Animation::initialize(tubes, maxBrightness);
 
