@@ -13,6 +13,9 @@ int curAnimationIndex = 0;
 hw_timer_t* refreshTimer;
 volatile bool refreshTick = false;
 
+int brightness = 150;
+long brightnessDelayMs = -1;
+
 void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
 }
@@ -84,6 +87,27 @@ void handleRefresh() {
   }
 }
 
+void updateBrightness() {
+  if (brightnessDelayMs < 0) {
+    int delaySecs, hour, minute, second;
+
+    rtcGetTime(hour, minute, second);
+
+    int curMins = hour * 60 + minute;
+    int minsToDay = (dayTransitionTime.tm_hour * 60 + dayTransitionTime.tm_min - curMins + 1440) % 1440;
+    int minsToNight = (nightTransitionTime.tm_hour * 60 + nightTransitionTime.tm_min - curMins + 1440) % 1440;
+
+    isNight = minsToDay < minsToNight;
+    brightness = isNight ? nightBrightness : dayBrightness;
+    delaySecs = isNight ? minsToDay : minsToNight;
+
+    String timeOfDay = isNight ? "night" : "day";
+    log_i("Setting brightness to %d (%s)", brightness, timeOfDay);
+
+    brightnessDelayMs = delaySecs * 1000;
+  }
+}
+
 void setup() {
   delay(2000);
   Serial.begin(115200);
@@ -113,6 +137,7 @@ void setup() {
 
 void loop() {
   handleRefresh();
+  updateBrightness();
   checkWifiStatus();
   server.handleClient();
   ArduinoOTA.handle();

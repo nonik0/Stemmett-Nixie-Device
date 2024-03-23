@@ -12,11 +12,13 @@ bool animationsEnabled[NUM_ANIMATIONS];
 TransitionBehavior transitionBehavior = TransitionBehavior::Sequential;
 
 // brightness settings
-int brightness;
 struct tm dayTransitionTime;
 int dayBrightness;
 struct tm nightTransitionTime;
 int nightBrightness;
+
+// based off current time
+bool isNight;
 
 void initSettings() {
   if (!preferencesInitialized) {
@@ -34,7 +36,6 @@ void loadSettings() {
     animationsEnabled[i] = preferences.getBool(key.c_str(), true);
   }
   transitionBehavior = (TransitionBehavior)preferences.getUChar("tb", 0);
-  brightness = preferences.getUChar("b", 255);
   preferences.getBytes("dtt", &dayTransitionTime,
                        sizeof(dayTransitionTime));
   dayBrightness = preferences.getUChar("db", 255);
@@ -53,7 +54,6 @@ void saveSettings() {
     preferences.putBool(key.c_str(), animationsEnabled[i]);
   }
   preferences.putUChar("tb", transitionBehavior);
-  preferences.putUChar("b", brightness);
   preferences.putBytes("dtt", &dayTransitionTime,
                        sizeof(dayTransitionTime));
   preferences.putUChar("db", dayBrightness);

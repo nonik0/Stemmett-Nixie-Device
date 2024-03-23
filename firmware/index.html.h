@@ -108,23 +108,30 @@ const char *indexHtml = R"====(
   </div>
  
   <div>
-    <p>Current Brightness:</p>
-    <input id="currentBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('', this.value)">
+    <p>System Time:</p>
+    <span id="systemTime" class="label"></span>
+    <span id="isNight" class="label"></span>
   </div>
+
+  <p>Day Settings:</p>
   <div>
-    <p>Day Transition Time:</p>
+    Transition Time:
     <input id="dayTransitionTime" type="time" onchange="setTransitionTime('Day', this.value)">
   </div>
+  <br/>
   <div>
-    <p>Daytime Brightness:</p>
+    Brightness:
     <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
   </div>
+  <br/>
+  <p>Night Settings:</p>
   <div>
-    <p>Night Transition Time:</p>
+    Transition Time:
     <input id="nightTransitionTime" type="time" onchange="setTransitionTime('Night', this.value)">
   </div>
+  <br/>
   <div>
-    <p>Nighttime Brightness:</p>
+    Brightness:
     <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
   </div>
   
@@ -151,7 +158,8 @@ function initializePage(deviceState) {
     animationSwitchesContainer.appendChild(divElement);
     });
     document.getElementById('transitionType').value = deviceState.transitionBehavior;
-    document.getElementById('currentBrightness').value = deviceState.currentBrightness;
+    document.getElementById('systemTime').innerText = deviceState.systemTime;
+    document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
     document.getElementById('dayTransitionTime').value = deviceState.dayTransitionTime;
     document.getElementById('nightBrightness').value = deviceState.nightBrightness;

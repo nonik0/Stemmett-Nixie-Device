@@ -4,27 +4,51 @@
 #include "rtc.h"
 #include "settings.h"
 
+extern long brightnessDelayMs;
+
 WebServer server(80);
 
 void restIndex() {
+  log_i("Serving index.html");
   server.send(200, "text/html", indexHtml);
   log_i("Served index.html");
 }
 
 void restGetState() {
-  // lighterweight than using a json library
+  log_i("Sending device state");
+  // lighter weight than using a json library
   String response = "{";
+
   response += "\"animations\": [";
-  for (int i = 1; i < NUM_ANIMATIONS; i++) { // skip name animation
-    response += "{\"name\": \"" + String(AnimationTypeStrings[i]) + "\", \"enabled\": " +
-                (animationsEnabled[i] ? "true" : "false") + "}";
-    if (i < NUM_ANIMATIONS - 1) response += ",";
+  for (int i = 1; i < NUM_ANIMATIONS; i++) {  // skip name animation
+    response +=
+        "{\"name\": \"" + String(AnimationTypeStrings[i]) +
+        "\", \"enabled\": " + (animationsEnabled[i] ? "true" : "false") + "}";
+    if (i < NUM_ANIMATIONS - 1)
+      response += ",";
   }
   response += "],";
-  response += "\"transitionBehavior\": \"" + String(transitionBehavior == TransitionBehavior::Sequential ? "sequential" : "random") + "\",";
+  response +=
+      "\"transitionBehavior\": \"" +
+      String(transitionBehavior == TransitionBehavior::Sequential ? "sequential"
+                                                                  : "random") +
+      "\",";
 
-  int currentBrightnessPct = brightness / 2.55;
-  response += "\"currentBrightness\": " + String(currentBrightnessPct) + ",";
+  // Format systemTime as HH:mm:ss
+  int hour, minute, second;
+  rtcGetTime(hour, minute, second);
+  String hourStr = String(hour);
+  String minuteStr = String(minute);
+  String secondStr = String(second);
+  if (hour < 10)
+    hourStr = "0" + hourStr;
+  if (minute < 10)
+    minuteStr = "0" + minuteStr;
+  if (second < 10)
+    secondStr = "0" + secondStr;
+  response += "\"systemTime\": \"" + String(hourStr) + ":" + String(minuteStr) +
+              ":" + String(secondStr) + "\",";
+  response += "\"isNight\": " + String(isNight ? "true" : "false") + ",";
 
   int dayBrightnessPct = dayBrightness / 2.55;
   response += "\"dayBrightness\": " + String(dayBrightnessPct) + ",";
@@ -32,8 +56,10 @@ void restGetState() {
   // Format dayTransitionTime as HH:mm
   String dayHour = String(dayTransitionTime.tm_hour);
   String dayMinute = String(dayTransitionTime.tm_min);
-  if(dayTransitionTime.tm_hour < 10) dayHour = "0" + dayHour;
-  if(dayTransitionTime.tm_min < 10) dayMinute = "0" + dayMinute;
+  if (dayTransitionTime.tm_hour < 10)
+    dayHour = "0" + dayHour;
+  if (dayTransitionTime.tm_min < 10)
+    dayMinute = "0" + dayMinute;
   response += "\"dayTransitionTime\": \"" + dayHour + ":" + dayMinute + "\",";
 
   int nightBrightnessPct = nightBrightness / 2.55;
@@ -42,9 +68,12 @@ void restGetState() {
   // Format nightTransitionTime as HH:mm
   String nightHour = String(nightTransitionTime.tm_hour);
   String nightMinute = String(nightTransitionTime.tm_min);
-  if(nightTransitionTime.tm_hour < 10) nightHour = "0" + nightHour;
-  if(nightTransitionTime.tm_min < 10) nightMinute = "0" + nightMinute;
-  response += "\"nightTransitionTime\": \"" + nightHour + ":" + nightMinute + "\"";
+  if (nightTransitionTime.tm_hour < 10)
+    nightHour = "0" + nightHour;
+  if (nightTransitionTime.tm_min < 10)
+    nightMinute = "0" + nightMinute;
+  response +=
+      "\"nightTransitionTime\": \"" + nightHour + ":" + nightMinute + "\"";
 
   response += "}";
   server.send(200, "application/json", response);
@@ -80,8 +109,11 @@ void restSetAnimationState(bool isEnabled) {
   }
 
   animationsEnabled[animationType] = isEnabled;
-  server.send(200, "text/plain", "Animation " + animationStr + " " + (isEnabled ? "enabled" : "disabled"));
-  log_i("Animation %s %s", animationStr.c_str(), (isEnabled ? "enabled" : "disabled"));
+  server.send(
+      200, "text/plain",
+      "Animation " + animationStr + " " + (isEnabled ? "enabled" : "disabled"));
+  log_i("Animation %s %s", animationStr.c_str(),
+        (isEnabled ? "enabled" : "disabled"));
   saveSettings();
 }
 
@@ -111,7 +143,7 @@ void restSetTransitionType() {
   }
 }
 
-void restSetBrightness(int *brightness, String name) {
+void restSetBrightness(int* brightness, String name) {
   if (!server.hasArg("value")) {
     server.send(400, "text/plain", "No brightness value provided");
     log_w("No brightness value provided");
@@ -138,9 +170,12 @@ void restSetBrightness(int *brightness, String name) {
               name + " brightness set to " + String(brightnessPct) + "%");
   log_i("%s brightness set to %d%%", name.c_str(), brightnessPct);
   saveSettings();
+
+  // update the brightness immediately
+  brightnessDelayMs = -1;
 }
 
-void restSetTransitionTime(tm *transitionTime, String name) {
+void restSetTransitionTime(tm* transitionTime, String name) {
   if (!server.hasArg("value")) {
     server.send(400, "text/plain", "No transition time provided");
     log_w("No transition time provided");
@@ -170,17 +205,22 @@ void restSetup() {
   server.on("/restart", HTTP_GET, restRestart);
   server.on("/syncTime", HTTP_GET, restSyncTime);
 
-  server.on("/enableAnimation", HTTP_GET, []() { restSetAnimationState(true); });
-  server.on("/disableAnimation", HTTP_GET, []() { restSetAnimationState(false); });
+  server.on("/enableAnimation", HTTP_GET,
+            []() { restSetAnimationState(true); });
+  server.on("/disableAnimation", HTTP_GET,
+            []() { restSetAnimationState(false); });
   server.on("/setTransitionType", HTTP_GET, restSetTransitionType);
 
-  server.on("/setBrightness", HTTP_GET, []() { restSetBrightness(&brightness, "Current"); });
-  server.on("/setDayBrightness", HTTP_GET, []() { restSetBrightness(&dayBrightness, "Day"); });
-  server.on("/setDayTransitionTime", HTTP_GET, []() { restSetTransitionTime(&dayTransitionTime, "Day"); });
-  server.on("/setNightBrightness", HTTP_GET, []() { restSetBrightness(&nightBrightness, "Night"); });
-  server.on("/setNightTransitionTime", HTTP_GET, []() { restSetTransitionTime(&nightTransitionTime, "Night"); });
+  server.on("/setDayBrightness", HTTP_GET,
+            []() { restSetBrightness(&dayBrightness, "Day"); });
+  server.on("/setDayTransitionTime", HTTP_GET,
+            []() { restSetTransitionTime(&dayTransitionTime, "Day"); });
+  server.on("/setNightBrightness", HTTP_GET,
+            []() { restSetBrightness(&nightBrightness, "Night"); });
+  server.on("/setNightTransitionTime", HTTP_GET,
+            []() { restSetTransitionTime(&nightTransitionTime, "Night"); });
 
-  //server.on("/recentLogs", HTTP_GET, restRecentLogs);
+  // server.on("/recentLogs", HTTP_GET, restRecentLogs);
   server.begin();
 
   log_i("REST server running");

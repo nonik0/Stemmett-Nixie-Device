@@ -10,14 +10,29 @@ const int DstOffsetSecs = 3600;
 
 ESP32Time espRtc;
 TwoWire twoWire(0);
-RTC_DS3231 rtc;
+RTC_DS3231 ds3231Rtc;
 
-bool rtcInit = false;
+bool ds3231RtcInit = false;
+
+void rtcGetTime(int& hour, int& minute, int& second) {
+  if (ds3231RtcInit) {
+    DateTime now = ds3231Rtc.now();
+    hour = now.hour();
+    minute = now.minute();
+    second = now.second();
+    log_i("Reading DS3231 RTC: %02u:%02u:%02u", hour, minute, second);
+  } else {
+    hour = espRtc.getHour(true); // 24 hour
+    minute = espRtc.getMinute();
+    second = espRtc.getSecond();
+    log_i("Reading ESP RTC: %02u:%02u:%02u", hour, minute, second);
+  }
+}
 
 void rtcSyncTime() {
   char format[] = "hh:mm:ss";
-  if (rtcInit)
-    log_i("DS3231: %s", rtc.now().toString(format));
+  if (ds3231RtcInit)
+    log_i("DS3231: %s", ds3231Rtc.now().toString(format));
   log_i("ESP: %s", espRtc.getTime());
 
   struct tm timeinfo;
@@ -35,9 +50,9 @@ void rtcSyncTime() {
   log_i("Adjusting ESP32 RTC with NTP time");
   espRtc.setTimeStruct(timeinfo);
 
-  if (rtcInit) {
-    log_i("Adjusting DS3231 with NTP time");
-    rtc.adjust((yr, mt, dy, hr, mi, se));
+  if (ds3231RtcInit) {
+    log_i("Adjusting DS3231 RTC with NTP time");
+    ds3231Rtc.adjust((yr, mt, dy, hr, mi, se));
   }
 }
 
@@ -48,7 +63,7 @@ void rtcSetup() {
     return;
   }
 
-  if (!(rtcInit = rtc.begin(&twoWire)))
+  if (!(ds3231RtcInit = ds3231Rtc.begin(&twoWire)))
     log_w("Couldn't find RTC");
 
   configTime(GmtOffsetSecs, DstOffsetSecs, NtpServer);
