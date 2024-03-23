@@ -3,7 +3,7 @@
 #include "rainAnimation.h"
 
 void RainAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("RainAnimation::initialize");
+  log_d("RainAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(25000);
 

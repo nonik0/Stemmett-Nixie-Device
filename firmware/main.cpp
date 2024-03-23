@@ -6,20 +6,22 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-TransitionBehavior transitionBehavior = TransitionBehavior::Sequential;
-bool animationsEnabled[NUM_ANIMATIONS];
 Animation* animations[NUM_ANIMATIONS];
 Animation* curAnimation;
-int i = 0;
 int curAnimationIndex = 0;
-int newAnimationIndex = 0;
-int brightness = 150;  // MAX_BRIGHTNESS;
 
 hw_timer_t* refreshTimer;
 volatile bool refreshTick = false;
 
 void IRAM_ATTR refreshTimerCallback() {
   refreshTick = true;
+}
+
+bool ableToTransition() {
+  // check if any animations are enabled other than the name animation
+  for (int i = 1; i < NUM_ANIMATIONS; i++)
+    if (animationsEnabled[i]) return true;
+  return false;
 }
 
 void initializeAllAnimations() {
@@ -43,17 +45,17 @@ void initializeAllAnimations() {
 }
 
 void initializeNewAnimation() {
-  log_i("Initializing new animation");
+  log_d("Initializing new animation");
 
-  if (curAnimationIndex == AnimationType::Name) {
+  int newAnimationIndex;
+  if (curAnimationIndex == AnimationType::Name && ableToTransition()) {
     do {
       if (transitionBehavior == TransitionBehavior::Sequential)
-        newAnimationIndex = 1 + (i++) % (NUM_ANIMATIONS - 1);
+        newAnimationIndex = 1 + (curAnimationIndex++) % (NUM_ANIMATIONS - 1);
       else if (transitionBehavior == TransitionBehavior::Random)
         newAnimationIndex = random(1, NUM_ANIMATIONS);
-    } while (!animationsEnabled[newAnimationIndex] ||
-             newAnimationIndex == curAnimationIndex);
-    log_i("Switching to animation %d", newAnimationIndex);
+    } while (!animationsEnabled[newAnimationIndex] || newAnimationIndex == curAnimationIndex);
+    log_d("Switching to animation %d", newAnimationIndex);
   } else {
     newAnimationIndex = AnimationType::Name;
   }
@@ -61,7 +63,7 @@ void initializeNewAnimation() {
   curAnimationIndex = newAnimationIndex;
   curAnimation = animations[newAnimationIndex];
   curAnimation->initialize(Tubes, brightness);
-  log_i("Initialized animation %d", newAnimationIndex);
+  log_d("Initialized animation %d", newAnimationIndex);
 }
 
 void handleRefresh() {
@@ -85,7 +87,7 @@ void handleRefresh() {
 void setup() {
   delay(2000);
   Serial.begin(115200);
-  log_w("setup()");
+  log_i("Starting setup");
 
   nixieSetup();
   wifiSetup();
@@ -94,17 +96,20 @@ void setup() {
   rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true);  // 80Mhz / 80 = 1Mhz
-  timerAttachInterrupt(refreshTimer, &refreshTimerCallback, true);
+  timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
   timerAlarmWrite(refreshTimer, REFRESH_RATE_US, true);
   timerAlarmEnable(refreshTimer);
 
   initializeAllAnimations();
 
+  // TODO: load saved settings from EEPROM
+  brightness = 150;
+
   // start first animation
   curAnimation = animations[AnimationType::Name];
   curAnimation->initialize(Tubes, brightness);
 
-  log_w("Setup complete");
+  log_i("Setup complete");
 }
 
 void loop() {

@@ -3,7 +3,7 @@
 #include "cylonScanAnimation.h"
 
 void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("CylonScanAnimation::initialize");
+  log_d("CylonScanAnimation::initialize");
   Animation::setDuration(25000);
   Animation::initialize(tubes, maxBrightness);
 

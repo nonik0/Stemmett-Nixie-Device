@@ -9,6 +9,7 @@ const long GmtOffsetSecs = -28800;
 const int DstOffsetSecs = 3600;
 
 ESP32Time espRtc;
+TwoWire twoWire(0);
 RTC_DS3231 rtc;
 
 bool rtcInit = false;
@@ -41,9 +42,13 @@ void rtcSyncTime() {
 }
 
 void rtcSetup() {
-  log_i("rtcSetup()");
+  // swap I2C clock and data because the board is dun goofed for the custom 4-pin RTC port
+  if (!twoWire.begin(9, 8)) {
+    log_w("Couldn't find I2C bus");
+    return;
+  }
 
-  if (!(rtcInit = rtc.begin()))
+  if (!(rtcInit = rtc.begin(&twoWire)))
     log_w("Couldn't find RTC");
 
   configTime(GmtOffsetSecs, DstOffsetSecs, NtpServer);

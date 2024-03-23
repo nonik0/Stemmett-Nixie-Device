@@ -14,7 +14,7 @@ TickResult Animation::handleTick(Tube tubes[NUM_TUBES]) {
 bool Animation::isComplete() { return _durationMs < 0; }
 
 void Animation::setComplete() {
-  log_i("Animation::setComplete");
+  log_d("Animation::setComplete");
   _durationMs = -1;
 }
 

@@ -3,7 +3,7 @@
 #include "slotMachineAnimation.h"
 
 void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("SlotMachineAnimation::initialize");
+  log_d("SlotMachineAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(26000);
 

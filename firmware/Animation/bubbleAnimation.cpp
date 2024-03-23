@@ -3,7 +3,7 @@
 #include "bubbleAnimation.h"
 
 void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("BubbleAnimation::initialize");
+  log_d("BubbleAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(55000);
 

@@ -31,6 +31,19 @@ enum AnimationType {
   Invalid,
 };
 
+const char* AnimationTypeStrings[NUM_ANIMATIONS] = {
+  "Name",
+  "BasicFade",
+  "Bubble",
+  "CylonScan",
+  "Ghost",
+  "NameGlitch",
+  "Pulsar",
+  "Rain",
+  "RandomScan",
+  "Scan",
+  "SlotMachine",
+};
 
 enum TransitionBehavior {
   Random,

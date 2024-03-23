@@ -6,8 +6,6 @@
 #include "secrets.h"
 
 void otaSetup() {
-  log_i("->otaSetup()");
-
   ArduinoOTA
       .onStart([]() {
         String type;
@@ -39,12 +37,10 @@ void otaSetup() {
       });
   ArduinoOTA.begin();
 
-  log_i("<-otaSetup()");
+  log_i("OTA server running");
 }
 
 void wifiSetup() {
-  log_i("->wifiSetup()");
-
   WiFi.disconnect(true, true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -69,7 +65,6 @@ void wifiSetup() {
   }
 
   log_i("IP: %s", WiFi.localIP().toString().c_str());
-  log_i("<-wifiSetup()");
 }
 
 int wifiDisconnects = 0;

@@ -3,7 +3,7 @@
 #include "randomScanAnimation.h"
 
 void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("RandomScanAnimation::initialize");
+  log_d("RandomScanAnimation::initialize");
   Animation::setDuration(10000);
   Animation::initialize(tubes, maxBrightness);
   _activeTube = -1;

@@ -3,7 +3,7 @@
 #include "ghostAnimation.h"
 
 void GhostAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
-  log_i("GhostAnimation::initialize");
+  log_d("GhostAnimation::initialize");
   Animation::initialize(tubes, maxBrightness);
   Animation::setDuration(25000);
 

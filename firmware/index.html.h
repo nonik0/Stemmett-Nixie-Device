@@ -108,53 +108,57 @@ const char *indexHtml = R"====(
   </div>
   
   <div>
+    <p>Current Brightness:</p>
+    <input id="brightness" type="range" min="0" max="100" value="50" onchange="setBrightness('', this.value)">
+  </div>
+  <div>
     <p>Daytime Brightness:</p>
-    <input type="range" min="0" max="100" value="50" oninput="setBrightness('Day', this.value)">
+    <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
   </div>
   <div>
     <p>Nighttime Brightness:</p>
-    <input type="range" min="0" max="100" value="50" oninput="setBrightness('Night', this.value)">
+    <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
   </div>
   
   <!-- Time selectors for transitions -->
   <div>
     <p>Day Start Time:</p>
-    <input type="time" id="dayStartTime" onchange="setTransitionTime('Day', this.value)">
+    <input id="dayStartTime" type="time" onchange="setTransitionTime('Day', this.value)">
   </div>
   <div>
     <p>Night Start Time:</p>
-    <input type="time" id="nightStartTime" onchange="setTransitionTime('Night', this.value)">
+    <input id="nightStartTime" type="time" onchange="setTransitionTime('Night', this.value)">
   </div>
   
 </div>
 
 <script>
-const AnimationTypes = [
-  "BasicFade",
-  "Bubble",
-  "CylonScan",
-  "Ghost",
-  "NameGlitch",
-  "Pulsar",
-  "Rain",
-  "RandomScan",
-  "Scan",
-  "SlotMachine",
-];
+var response = fetch('/getState')
+  .then(response => response.json())
+  .then(initializePage)
+  .catch(error => console.error('Error fetching device state:', error));
 
-// Dynamically generate switches for animations
-const animationSwitchesContainer = document.getElementById('animationSwitches');
-AnimationTypes.forEach((animation) => {
-  const divElement = document.createElement('div');
-  divElement.innerHTML = `
-    <label class="switch">
-      <input type="checkbox" onchange="toggleAnimation('${animation}', this.checked)">
-      <span class="slider rounded"></span>
-      </label>
-    <span class="label">${animation}</span>
-  `;
-  animationSwitchesContainer.appendChild(divElement);
-});
+function initializePage(deviceState) {
+    // Dynamically generate switches for animations
+    const animationSwitchesContainer = document.getElementById('animationSwitches');
+    deviceState.animations.forEach((animation) => {
+    const divElement = document.createElement('div');
+    divElement.innerHTML = `
+        <label class="switch">
+        <input type="checkbox" onchange="toggleAnimation('${animation.name}', this.checked)" ${animation.enabled ? 'checked' : ''}>
+        <span class="slider rounded"></span>
+        </label>
+        <span class="label">${animation.name}</span>
+    `;
+    animationSwitchesContainer.appendChild(divElement);
+    });
+    document.getElementById('transitionType').value = deviceState.transitionBehavior;
+    document.getElementById('brightness').value = deviceState.brightness;
+    document.getElementById('dayBrightness').value = deviceState.dayBrightness;
+    document.getElementById('dayStartTime').value = deviceState.dayStartTime;
+    document.getElementById('nightBrightness').value = deviceState.nightBrightness;
+    document.getElementById('nightStartTime').value = deviceState.nightStartTime;
+}
 
 function toggleAnimation(animationName, isEnabled) {
   const action = isEnabled ? 'enableAnimation' : 'disableAnimation';
@@ -178,6 +182,6 @@ function setBrightness(time, brightness) {
 }
 
 </script>
-</body>
+</body>                 
 </html>
 )====";
