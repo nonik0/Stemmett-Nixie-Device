@@ -1,19 +1,8 @@
 #include <WebServer.h>
 
-#include "Animation/animation.h"
 #include "index.html.h"
 #include "rtc.h"
-
-// animation settings
-bool animationsEnabled[NUM_ANIMATIONS];
-TransitionBehavior transitionBehavior = TransitionBehavior::Sequential;
-
-// brightness settings
-int brightness;
-struct tm dayTransitionTime;
-int dayBrightness;
-struct tm nightTransitionTime;
-int nightBrightness;
+#include "settings.h"
 
 WebServer server(80);
 
@@ -33,21 +22,30 @@ void restGetState() {
   }
   response += "],";
   response += "\"transitionBehavior\": \"" + String(transitionBehavior == TransitionBehavior::Sequential ? "sequential" : "random") + "\",";
-  response += "\"brightness\": " + String(100 - (brightness / 2.55)) + ",";
-  response += "\"dayBrightness\": " + String(100 - (dayBrightness / 2.55)) + ",";
+
+  int currentBrightnessPct = brightness / 2.55;
+  response += "\"currentBrightness\": " + String(currentBrightnessPct) + ",";
+
+  int dayBrightnessPct = dayBrightness / 2.55;
+  response += "\"dayBrightness\": " + String(dayBrightnessPct) + ",";
+
   // Format dayTransitionTime as HH:mm
   String dayHour = String(dayTransitionTime.tm_hour);
   String dayMinute = String(dayTransitionTime.tm_min);
   if(dayTransitionTime.tm_hour < 10) dayHour = "0" + dayHour;
   if(dayTransitionTime.tm_min < 10) dayMinute = "0" + dayMinute;
   response += "\"dayTransitionTime\": \"" + dayHour + ":" + dayMinute + "\",";
-  response += "\"nightBrightness\": " + String(100 - (nightBrightness / 2.55)) + ",";
+
+  int nightBrightnessPct = nightBrightness / 2.55;
+  response += "\"nightBrightness\": " + String(nightBrightnessPct) + ",";
+
   // Format nightTransitionTime as HH:mm
   String nightHour = String(nightTransitionTime.tm_hour);
   String nightMinute = String(nightTransitionTime.tm_min);
   if(nightTransitionTime.tm_hour < 10) nightHour = "0" + nightHour;
   if(nightTransitionTime.tm_min < 10) nightMinute = "0" + nightMinute;
   response += "\"nightTransitionTime\": \"" + nightHour + ":" + nightMinute + "\"";
+
   response += "}";
   server.send(200, "application/json", response);
   log_i("Sent device state");
@@ -84,6 +82,7 @@ void restSetAnimationState(bool isEnabled) {
   animationsEnabled[animationType] = isEnabled;
   server.send(200, "text/plain", "Animation " + animationStr + " " + (isEnabled ? "enabled" : "disabled"));
   log_i("Animation %s %s", animationStr.c_str(), (isEnabled ? "enabled" : "disabled"));
+  saveSettings();
 }
 
 void restSetTransitionType() {
@@ -99,10 +98,12 @@ void restSetTransitionType() {
     transitionBehavior = TransitionBehavior::Sequential;
     server.send(200, "text/plain", "Transition type set to sequential");
     log_i("Transition type set to sequential");
+    saveSettings();
   } else if (transitionStr == "random") {
     transitionBehavior = TransitionBehavior::Random;
     server.send(200, "text/plain", "Transition type set to random");
     log_i("Transition type set to random");
+    saveSettings();
   } else {
     server.send(400, "text/plain", "Invalid transition type: " + transitionStr);
     log_w("Invalid transition type: %s", transitionStr.c_str());
@@ -110,7 +111,7 @@ void restSetTransitionType() {
   }
 }
 
-void restSetBrightness() {
+void restSetBrightness(int *brightness, String name) {
   if (!server.hasArg("value")) {
     server.send(400, "text/plain", "No brightness value provided");
     log_w("No brightness value provided");
@@ -132,10 +133,34 @@ void restSetBrightness() {
     return;
   }
 
-  brightness = (255.0 - 2.55 * (100 - brightnessPct));
+  *brightness = (255.0 - 2.55 * (100 - brightnessPct));
   server.send(200, "text/plain",
-              "Brightness set to " + String(brightnessPct) + "%");
-  log_i("Brightness set to %d%%", brightnessPct);
+              name + " brightness set to " + String(brightnessPct) + "%");
+  log_i("%s brightness set to %d%%", name.c_str(), brightnessPct);
+  saveSettings();
+}
+
+void restSetTransitionTime(tm *transitionTime, String name) {
+  if (!server.hasArg("value")) {
+    server.send(400, "text/plain", "No transition time provided");
+    log_w("No transition time provided");
+    return;
+  }
+
+  String timeStr = server.arg("value");
+  int hour = timeStr.substring(0, 2).toInt();
+  int minute = timeStr.substring(3, 5).toInt();
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    server.send(400, "text/plain", "Invalid time format: " + timeStr);
+    log_w("Invalid time format: %s", timeStr.c_str());
+    return;
+  }
+
+  transitionTime->tm_hour = hour;
+  transitionTime->tm_min = minute;
+  server.send(200, "text/plain", name + " transition time set to " + timeStr);
+  log_i("%s transition time set to %s", name, timeStr.c_str());
+  saveSettings();
 }
 
 void restSetup() {
@@ -149,11 +174,11 @@ void restSetup() {
   server.on("/disableAnimation", HTTP_GET, []() { restSetAnimationState(false); });
   server.on("/setTransitionType", HTTP_GET, restSetTransitionType);
 
-  server.on("/setBrightness", HTTP_GET, restSetBrightness);
-  // server.on("/setDayBrightness", HTTP_GET, handleBrightness);
-  // server.on("/setDayStart", HTTP_GET, handleBrightness);
-  // server.on("/setNightBrightness", HTTP_GET, handleBrightness);
-  // server.on("/setNightStart", HTTP_GET, handleBrightness);
+  server.on("/setBrightness", HTTP_GET, []() { restSetBrightness(&brightness, "Current"); });
+  server.on("/setDayBrightness", HTTP_GET, []() { restSetBrightness(&dayBrightness, "Day"); });
+  server.on("/setDayTransitionTime", HTTP_GET, []() { restSetTransitionTime(&dayTransitionTime, "Day"); });
+  server.on("/setNightBrightness", HTTP_GET, []() { restSetBrightness(&nightBrightness, "Night"); });
+  server.on("/setNightTransitionTime", HTTP_GET, []() { restSetTransitionTime(&nightTransitionTime, "Night"); });
 
   //server.on("/recentLogs", HTTP_GET, restRecentLogs);
   server.begin();

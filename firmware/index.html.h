@@ -106,28 +106,26 @@ const char *indexHtml = R"====(
       <option value="sequential">Sequential</option>
     </select>
   </div>
-  
+ 
   <div>
     <p>Current Brightness:</p>
-    <input id="brightness" type="range" min="0" max="100" value="50" onchange="setBrightness('', this.value)">
+    <input id="currentBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('', this.value)">
+  </div>
+  <div>
+    <p>Day Transition Time:</p>
+    <input id="dayTransitionTime" type="time" onchange="setTransitionTime('Day', this.value)">
   </div>
   <div>
     <p>Daytime Brightness:</p>
     <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
   </div>
   <div>
+    <p>Night Transition Time:</p>
+    <input id="nightTransitionTime" type="time" onchange="setTransitionTime('Night', this.value)">
+  </div>
+  <div>
     <p>Nighttime Brightness:</p>
     <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
-  </div>
-  
-  <!-- Time selectors for transitions -->
-  <div>
-    <p>Day Start Time:</p>
-    <input id="dayStartTime" type="time" onchange="setTransitionTime('Day', this.value)">
-  </div>
-  <div>
-    <p>Night Start Time:</p>
-    <input id="nightStartTime" type="time" onchange="setTransitionTime('Night', this.value)">
   </div>
   
 </div>
@@ -153,11 +151,11 @@ function initializePage(deviceState) {
     animationSwitchesContainer.appendChild(divElement);
     });
     document.getElementById('transitionType').value = deviceState.transitionBehavior;
-    document.getElementById('brightness').value = deviceState.brightness;
+    document.getElementById('currentBrightness').value = deviceState.currentBrightness;
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
-    document.getElementById('dayStartTime').value = deviceState.dayStartTime;
+    document.getElementById('dayTransitionTime').value = deviceState.dayTransitionTime;
     document.getElementById('nightBrightness').value = deviceState.nightBrightness;
-    document.getElementById('nightStartTime').value = deviceState.nightStartTime;
+    document.getElementById('nightTransitionTime').value = deviceState.nightTransitionTime;
 }
 
 function toggleAnimation(animationName, isEnabled) {
@@ -177,8 +175,12 @@ function setTransitionType(transitionType) {
   fetch(`/setTransitionType?type=${transitionType}`);
 }
 
-function setBrightness(time, brightness) {
-  fetch(`/set${time}Brightness?value=${brightness}`);
+function setBrightness(timeOfDay, brightness) {
+  fetch(`/set${timeOfDay}Brightness?value=${brightness}`);
+}
+
+function setTransitionTime(timeOfDay, time) {
+  fetch(`/set${timeOfDay}TransitionTime?value=${time}`);
 }
 
 </script>

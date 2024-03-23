@@ -102,8 +102,7 @@ void setup() {
 
   initializeAllAnimations();
 
-  // TODO: load saved settings from EEPROM
-  brightness = 150;
+  loadSettings();
 
   // start first animation
   curAnimation = animations[AnimationType::Name];
