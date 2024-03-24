@@ -8,11 +8,9 @@ The hardware is designed in KiCad and all design files are included in the hardw
 The firmware is a PlatformIO-based project targetting the [TinyS3](https://esp32s3.com/tinys3.html) and all source files are included in the firmware directory. It makes the Nixies do fancy flashy animatey things while pausing to show the configured name/word between each animation.
 
 ## Work Left
-- simple REST/HTTP interface to be able to change settings (brightness, animations to include/skip, animation speed)
-- simple QoL features: night mode, alarm
 - a nice case for both pieces of hardware I've built for two little persons
 - more animations are always nice
-- is it even worth looking into using an RTOS at this point?
+- general debugging
 
 ## Images
 
