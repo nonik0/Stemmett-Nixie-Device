@@ -1,8 +1,8 @@
 #include "Animation/animation.h"
 #include "nixieDriver.h"
-#include "ota.h"
 #include "rest.h"
 #include "rtc.h"
+#include "services.h"
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
@@ -117,6 +117,7 @@ void setup() {
   wifiSetup();
   otaSetup();
   restSetup();
+  mDnsSetup();
   rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true);  // 80Mhz / 80 = 1Mhz

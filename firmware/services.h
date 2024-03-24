@@ -1,7 +1,6 @@
 #include <ArduinoOTA.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
-// #include <WiFiUdp.h>
 
 #include "secrets.h"
 
@@ -87,4 +86,14 @@ void checkWifiStatus() {
 
     wifiStatusDelayMs = 60 * 1000;  // 1 minute
   }
+}
+
+void mDnsSetup() {
+  if (!MDNS.begin("stemmett")) {
+    log_e("Error setting up mDNS");
+    return;
+  }
+
+  MDNS.addService("http", "tcp", 80);
+  log_i("mDNS responder started");
 }

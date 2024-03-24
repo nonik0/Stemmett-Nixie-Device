@@ -196,6 +196,9 @@ void restSetTransitionTime(tm* transitionTime, String name) {
   server.send(200, "text/plain", name + " transition time set to " + timeStr);
   log_i("%s transition time set to %s", name, timeStr.c_str());
   saveSettings();
+
+  // update the brightness immediately
+  brightnessDelayMs = -1;
 }
 
 void restSetup() {

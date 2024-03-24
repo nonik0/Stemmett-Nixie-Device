@@ -23,7 +23,7 @@ const char *indexHtml = R"====(
     position: relative;
     display: inline-block;
     width: 60px;
-    height: 34px;
+    height: 30px;
     margin: 4px 2px;
   }
   .switch input { 
@@ -45,8 +45,8 @@ const char *indexHtml = R"====(
   .slider:before {
     position: absolute;
     content: "";
-    height: 26px;
-    width: 26px;
+    height: 22px;
+    width: 22px;
     left: 4px;
     bottom: 4px;
     background-color: white;
@@ -60,12 +60,12 @@ const char *indexHtml = R"====(
     box-shadow: 0 0 1px #f90;
   }
   input:checked + .slider:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
+    -webkit-transform: translateX(30px);
+    -ms-transform: translateX(30px);
+    transform: translateX(30px);
   }
   .slider.rounded {
-    border-radius: 10px;
+    border-radius: 8px;
   }
   .slider.rounded:before {
     border-radius: 25%;
@@ -96,49 +96,54 @@ const char *indexHtml = R"====(
   <button class="button" onclick="syncTime()">Sync Time</button>
 
   <div class="switch-container">
-    <p>Animations:</p>
+    <p><b>Animations:</b></p>
+    <div>
+      Transition Type:
+      <select id="transitionType" onchange="setTransitionType(this.value)">
+        <option value="random">Random</option>
+        <option value="sequential">Sequential</option>
+      </select>
+    </div>
+    <br/>
     <div id="animationSwitches"></div>
-  </div>  
-  <div>
-    <p>Animation Transition Type:</p>
-    <select id="transitionType" onchange="setTransitionType(this.value)">
-      <option value="random">Random</option>
-      <option value="sequential">Sequential</option>
-    </select>
   </div>
- 
   <div>
-    <p>System Time:</p>
+    <p><b>System Time</b></p>
     <span id="systemTime" class="label"></span>
     <span id="isNight" class="label"></span>
   </div>
-
-  <p>Day Settings:</p>
+  <br/>
   <div>
-    Transition Time:
-    <input id="dayTransitionTime" type="time" onchange="setTransitionTime('Day', this.value)">
+    <p><b>Day Settings:</b></p>
+    <div>
+      Transition Time:
+      <input id="dayTransitionTime" type="time" onchange="setTransitionTime('Day', this.value)">
+    </div>
+    <br/>
+    <div>
+      Brightness:
+      <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
+    </div>
   </div>
   <br/>
   <div>
-    Brightness:
-    <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
+    <p><b>Night Settings:</b></p>
+    <div>
+      Transition Time:
+      <input id="nightTransitionTime" type="time" onchange="setTransitionTime('Night', this.value)">
+    </div>
+    <br/>
+    <div>
+      Brightness:
+      <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
+    </div>
   </div>
-  <br/>
-  <p>Night Settings:</p>
-  <div>
-    Transition Time:
-    <input id="nightTransitionTime" type="time" onchange="setTransitionTime('Night', this.value)">
-  </div>
-  <br/>
-  <div>
-    Brightness:
-    <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
-  </div>
-  
 </div>
 
 <script>
-var response = fetch('/getState')
+var systemTimeAtPageLoad;
+
+fetch('/getState')
   .then(response => response.json())
   .then(initializePage)
   .catch(error => console.error('Error fetching device state:', error));
@@ -164,6 +169,29 @@ function initializePage(deviceState) {
     document.getElementById('dayTransitionTime').value = deviceState.dayTransitionTime;
     document.getElementById('nightBrightness').value = deviceState.nightBrightness;
     document.getElementById('nightTransitionTime').value = deviceState.nightTransitionTime;
+    document.getElementById(isNight ? 'nightBrightness' : 'dayBrightness').classList.add('active-slider');
+
+    // used for running system clock
+    const [hours, minutes, seconds] = deviceState.systemTime.split(":");
+    systemTimeAtPageLoad = new Date();
+    systemTimeAtPageLoad.setHours(hours);
+    systemTimeAtPageLoad.setMinutes(minutes);
+    systemTimeAtPageLoad.setSeconds(seconds);
+
+    updateSystemTime();
+}
+
+function updateSystemTime() {
+  const now = new Date();
+  const elapsedTime = now - systemTimeAtPageLoad;
+  const currentTime = new Date(systemTimeAtPageLoad.getTime() + elapsedTime);
+
+  let h = currentTime.getHours().toString().padStart(2, '0');
+  let m = currentTime.getMinutes().toString().padStart(2, '0');
+  let s = currentTime.getSeconds().toString().padStart(2, '0');
+
+  document.getElementById('systemTime').innerText = `${h}:${m}:${s}`;
+  setTimeout(updateSystemTime, 1000);
 }
 
 function toggleAnimation(animationName, isEnabled) {
