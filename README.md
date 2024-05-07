@@ -20,6 +20,12 @@ The firmware is a PlatformIO-based project targetting the [TinyS3](https://esp32
 
 <img width="1062" alt="photoof2devices" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/243bab7f-05ea-454b-98be-dd6fbc3197f3">
 
-## Video 
+## Animations
 
-TODO
+<img width="400" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/ccc5fb62-b015-490d-8923-8d73e164e0a2" />
+<img width="400" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/f9963695-3fc3-45b0-a612-ad508b737c26" />
+<img width="400" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/8f2c7b56-fa22-4590-b4f3-87f4bfd95e07" />
+<img width="400" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/69eb9db4-b7cb-4ffd-b9ef-756fb2e60224" />
+<img width="400" src="https://github.com/nonik0/Stemmett-Nixie-Device/assets/17152317/cf13f3ec-e01d-4733-bef6-d13dc563a7ce" />
+
+TODO: animations in better lighting...
