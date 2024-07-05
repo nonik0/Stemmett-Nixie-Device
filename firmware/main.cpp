@@ -6,28 +6,44 @@
 #include "tubeConfiguration.h"
 #include "tubes.h"
 
-Animation* animations[NUM_ANIMATIONS];
-Animation* curAnimation;
+Animation *animations[NUM_ANIMATIONS];
+Animation *curAnimation;
 int curAnimationIndex = 0;
 
-hw_timer_t* refreshTimer;
+hw_timer_t *refreshTimer;
 volatile bool refreshTick = false;
 
 int brightness = 150;
-long brightnessDelayMs = -1;
+int brightnessLastUpdateMillis = 0;
+int brightnessDelayMs = 0;
 
-void IRAM_ATTR refreshTimerCallback() {
+void IRAM_ATTR refreshTimerCallback()
+{
   refreshTick = true;
 }
 
-bool ableToTransition() {
-  // check if any animations are enabled other than the name animation
-  for (int i = 1; i < NUM_ANIMATIONS; i++)
-    if (animationsEnabled[i]) return true;
-  return false;
+bool ableToTransition(int animationIndex = -1)
+{
+  if (animationIndex < 0)
+  {
+    // check if any animations are enabled other than the name animation
+    for (int i = 1; i < NUM_ANIMATIONS; i++)
+    {
+      if (!isNight && animationsEnabledDay[i])
+        return true;
+      else if (isNight && animationsEnabledNight[i])
+        return true;
+      return false;
+    }
+  }
+  else
+  {
+    return isNight ? animationsEnabledNight[animationIndex] : animationsEnabledDay[animationIndex];
+  }
 }
 
-void initializeAllAnimations() {
+void initializeAllAnimations()
+{
   // initialize animations
   animations[AnimationType::BasicFade] = new BasicFadeAnimation();
   animations[AnimationType::Bubble] = new BubbleAnimation();
@@ -42,24 +58,30 @@ void initializeAllAnimations() {
   animations[AnimationType::SlotMachine] = new SlotMachineAnimation();
 
   // enable animations
-  for (int i = 0; i < NUM_ANIMATIONS; i++) {
-    animationsEnabled[i] = true;
+  for (int i = 0; i < NUM_ANIMATIONS; i++)
+  {
+    animationsEnabledDay[i] = true;
   }
 }
 
-void initializeNewAnimation() {
+void initializeNewAnimation()
+{
   log_d("Initializing new animation");
 
   int newAnimationIndex;
-  if (curAnimationIndex == AnimationType::Name && ableToTransition()) {
-    do {
+  if (curAnimationIndex == AnimationType::Name && ableToTransition())
+  {
+    do
+    {
       if (transitionBehavior == TransitionBehavior::Sequential)
         newAnimationIndex = 1 + (curAnimationIndex++) % (NUM_ANIMATIONS - 1);
       else if (transitionBehavior == TransitionBehavior::Random)
         newAnimationIndex = random(1, NUM_ANIMATIONS);
-    } while (!animationsEnabled[newAnimationIndex] || newAnimationIndex == curAnimationIndex);
+    } while (!ableToTransition(newAnimationIndex) || newAnimationIndex == curAnimationIndex);
     log_d("Switching to animation %d", newAnimationIndex);
-  } else {
+  }
+  else
+  {
     newAnimationIndex = AnimationType::Name;
   }
 
@@ -69,8 +91,10 @@ void initializeNewAnimation() {
   log_d("Initialized animation %d", newAnimationIndex);
 }
 
-void handleRefresh() {
-  if (refreshTick) {
+void handleRefresh()
+{
+  if (refreshTick)
+  {
     refreshTick = false;
 
     if (curAnimation->isComplete())
@@ -87,8 +111,12 @@ void handleRefresh() {
   }
 }
 
-void updateBrightness() {
-  if (brightnessDelayMs < 0) {
+void updateBrightness()
+{
+  if (millis() - brightnessLastUpdateMillis > brightnessDelayMs)
+  {
+    log_d("Updating brightness");
+
     int delaySecs, hour, minute, second;
 
     rtcGetTime(hour, minute, second);
@@ -97,18 +125,28 @@ void updateBrightness() {
     int minsToDay = (dayTransitionTime.tm_hour * 60 + dayTransitionTime.tm_min - curMins + 1440) % 1440;
     int minsToNight = (nightTransitionTime.tm_hour * 60 + nightTransitionTime.tm_min - curMins + 1440) % 1440;
 
+    // if minsToDay or minsToNight are 0, it means the transition time is the current time so we want the other value
+    if (minsToDay == 0)
+      minsToDay = 1440;
+    if (minsToNight == 0)
+      minsToNight = 1440;
+
+    log_i("Current time: %02d:%02d, mins to day: %d, mins to night: %d", hour, minute, minsToDay, minsToNight);
+
     isNight = minsToDay < minsToNight;
     brightness = isNight ? nightBrightness : dayBrightness;
-    delaySecs = isNight ? minsToDay : minsToNight;
+    delaySecs = 60 * (isNight ? minsToDay : minsToNight);
 
     String timeOfDay = isNight ? "night" : "day";
-    log_i("Setting brightness to %d (%s)", brightness, timeOfDay);
+    log_i("Setting brightness to %d (%s), next check in %dm", brightness, timeOfDay, delaySecs/60);
 
     brightnessDelayMs = delaySecs * 1000;
+    brightnessLastUpdateMillis = millis();
   }
 }
 
-void setup() {
+void setup()
+{
   delay(2000);
   Serial.begin(115200);
   log_i("Starting setup");
@@ -120,7 +158,7 @@ void setup() {
   mDnsSetup();
   rtcSetup();
 
-  refreshTimer = timerBegin(0, 80, true);  // 80Mhz / 80 = 1Mhz
+  refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
   timerAlarmWrite(refreshTimer, REFRESH_RATE_US, true);
   timerAlarmEnable(refreshTimer);
@@ -136,7 +174,8 @@ void setup() {
   log_i("Setup complete");
 }
 
-void loop() {
+void loop()
+{
   handleRefresh();
   updateBrightness();
   checkWifiStatus();

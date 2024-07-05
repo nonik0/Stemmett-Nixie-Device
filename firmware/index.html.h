@@ -104,8 +104,6 @@ const char *indexHtml = R"====(
         <option value="sequential">Sequential</option>
       </select>
     </div>
-    <br/>
-    <div id="animationSwitches"></div>
   </div>
   <div>
     <p><b>System Time</b></p>
@@ -124,6 +122,8 @@ const char *indexHtml = R"====(
       Brightness:
       <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
     </div>
+    <br/>
+    <div id="animationDaySwitches"></div>
   </div>
   <br/>
   <div>
@@ -137,6 +137,8 @@ const char *indexHtml = R"====(
       Brightness:
       <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
     </div>
+    <br/>
+    <div id="animationNightSwitches"></div>
   </div>
 </div>
 
@@ -150,18 +152,33 @@ fetch('/getState')
 
 function initializePage(deviceState) {
     // Dynamically generate switches for animations
-    const animationSwitchesContainer = document.getElementById('animationSwitches');
-    deviceState.animations.forEach((animation) => {
+
+    const animationDaySwitchesContainer = document.getElementById('animationDaySwitches');
+    deviceState.animationsDay.forEach((animation) => {
     const divElement = document.createElement('div');
     divElement.innerHTML = `
         <label class="switch">
-        <input type="checkbox" onchange="toggleAnimation('${animation.name}', this.checked)" ${animation.enabled ? 'checked' : ''}>
+        <input type="checkbox" onchange="toggleAnimation('${animation.name}', this.checked, false)" ${animation.enabled ? 'checked' : ''}>
         <span class="slider rounded"></span>
         </label>
         <span class="label">${animation.name}</span>
     `;
-    animationSwitchesContainer.appendChild(divElement);
+    animationDaySwitchesContainer.appendChild(divElement);
     });
+
+    const animationNightSwitchesContainer = document.getElementById('animationNightSwitches');
+    deviceState.animationsNight.forEach((animation) => {
+    const divElement = document.createElement('div');
+    divElement.innerHTML = `
+        <label class="switch">
+        <input type="checkbox" onchange="toggleAnimation('${animation.name}', this.checked, true)" ${animation.enabled ? 'checked' : ''}>
+        <span class="slider rounded"></span>
+        </label>
+        <span class="label">${animation.name}</span>
+    `;
+    animationNightSwitchesContainer.appendChild(divElement);
+    });
+
     document.getElementById('transitionType').value = deviceState.transitionBehavior;
     document.getElementById('systemTime').innerText = deviceState.systemTime;
     document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
@@ -194,8 +211,13 @@ function updateSystemTime() {
   setTimeout(updateSystemTime, 1000);
 }
 
-function toggleAnimation(animationName, isEnabled) {
-  const action = isEnabled ? 'enableAnimation' : 'disableAnimation';
+function toggleAnimation(animationName, isEnabled, isNight) {
+  let action;
+  if (isNight) {
+    action = isEnabled ? 'enableAnimationNight' : 'disableAnimationNight';
+  } else {
+    action = isEnabled ? 'enableAnimationDay' : 'disableAnimationDay';
+  }
   fetch(`/${action}?name=${animationName}`);
 }
 
