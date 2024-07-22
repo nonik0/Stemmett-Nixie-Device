@@ -9,7 +9,6 @@ The firmware is a PlatformIO-based project targetting the [TinyS3](https://esp32
 
 ## Work Left
 - a nice case for both pieces of hardware I've built so far for two little persons
-- Wifi configuration (have issues with S3 wifi...maybe try C3?)
 - more animations are always nice
 - general debugging
 - BOM and better docs maybe if interest
