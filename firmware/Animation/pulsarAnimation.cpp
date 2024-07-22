@@ -6,15 +6,15 @@ bool PulsarAnimation::isVisible(int index) {
   return index >= 0 && index <= NUM_TUBES - 1;
 }
 
-void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("PulsarAnimation::initialize");
   Animation::setDuration(30000);
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
 
   _finalEjection = false;
 
   _pulsarIndex = (random(2) == 0) ? -StartOffset : NUM_TUBES - 1 + StartOffset;
-  _pulsarSpeed = random(1000,3000);
+  _pulsarSpeed = random(1000,500+1500*(speedFactor));
   _pulsarMovementDelay = _pulsarSpeed;
   _pulsarDirection = _pulsarIndex <= 0 ? Left : Right;
 
@@ -77,7 +77,7 @@ void PulsarAnimation::handleEjectionSpawning() {
         // if pulsar is not visible then ejections travels shorter distance
         ejection[inactiveEjectionIndex].distance =  random(1, NUM_TUBES); //isVisible(_pulsarIndex) ? random(2, NUM_TUBES-1) : random(1, OffScreenOffset+1); 
         ejection[inactiveEjectionIndex].slotActive = true;
-        ejection[inactiveEjectionIndex].speed = random(30, 200);
+        ejection[inactiveEjectionIndex].speed = random(30, 30+140*(_speedFactor/100.0));
       }
       else {
         // last ejection will reset tubes to primary cathode
@@ -85,7 +85,7 @@ void PulsarAnimation::handleEjectionSpawning() {
         ejection[inactiveEjectionIndex].direction = (Direction)-_pulsarDirection;
         ejection[inactiveEjectionIndex].distance = NUM_TUBES + StartOffset;
         ejection[inactiveEjectionIndex].slotActive = true;
-        ejection[inactiveEjectionIndex].speed = random(70, 130);
+        ejection[inactiveEjectionIndex].speed = random(70, 30+100*(_speedFactor/100.0));
         
         delay = 0x7FFFFFFF;
       }
@@ -121,7 +121,7 @@ void PulsarAnimation::handleEjectionMovement() {
           if (isVisible(ejection[i].index)) {
             // new tube positions updates
             if (ejection[i].slotActive) {
-              _slotHelper.enableCycling(ejection[i].index, random(30, 70));
+              _slotHelper.enableCycling(ejection[i].index, random(30, 20+50*(_speedFactor/100.0)));
             }
             else {
               _slotHelper.setRandomCathode(ejection[i].index);

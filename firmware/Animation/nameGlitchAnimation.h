@@ -35,9 +35,9 @@ class NameGlitchAnimation : public Animation {
   private:
     int _flickerDelay;
   public:
-    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override {
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) override {
       log_d("NameGlitchAnimation::initialize");
-      Animation::initialize(tubes, maxBrightness);
+      Animation::initialize(tubes, maxBrightness, speedFactor);
       Animation::setDuration(10000);
 
       for (int i = 0; i < NUM_TUBES; i++) {

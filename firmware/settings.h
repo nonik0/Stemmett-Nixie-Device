@@ -10,6 +10,8 @@ Preferences preferences;
 // animation settings
 bool animationsEnabledDay[NUM_ANIMATIONS];
 bool animationsEnabledNight[NUM_ANIMATIONS];
+float animationDaySpeedFactor;
+float animationNightSpeedFactor;
 TransitionBehavior transitionBehavior = TransitionBehavior::Sequential;
 
 // brightness settings
@@ -40,6 +42,8 @@ void loadSettings() {
     String key = "A" + String(i);
     animationsEnabledNight[i] = preferences.getBool(key.c_str(), true);
   }
+  animationDaySpeedFactor = preferences.getFloat("ds", 100);
+  animationNightSpeedFactor = preferences.getFloat("ns", 100);
   transitionBehavior = (TransitionBehavior)preferences.getUChar("tb", 0);
   preferences.getBytes("dtt", &dayTransitionTime,
                        sizeof(dayTransitionTime));
@@ -62,6 +66,8 @@ void saveSettings() {
     String key = "A" + String(i);
     preferences.putBool(key.c_str(), animationsEnabledNight[i]);
   }
+  preferences.putFloat("ds", animationDaySpeedFactor);
+  preferences.putFloat("ns", animationNightSpeedFactor);
   preferences.putUChar("tb", transitionBehavior);
   preferences.putBytes("dtt", &dayTransitionTime,
                        sizeof(dayTransitionTime));

@@ -23,6 +23,6 @@ class SlotMachineAnimation : public Animation {
 
   SlotHelper _slotHelper;
  public:
-  void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override;
+  void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) override;
   TickResult handleTick(Tube tubes[NUM_TUBES]) override;
 };

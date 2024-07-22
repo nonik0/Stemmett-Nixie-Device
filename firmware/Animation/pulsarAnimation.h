@@ -39,6 +39,6 @@ class PulsarAnimation : public Animation {
     void handleEjectionMovement();
     bool isVisible(int index);
   public:
-    void initialize(Tube tubes[NUM_TUBES], int maxBrightness);
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor);
     TickResult handleTick(Tube tubes[NUM_TUBES]);
 };

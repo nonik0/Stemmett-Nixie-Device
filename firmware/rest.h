@@ -142,39 +142,6 @@ void restSetAnimationState(bool isEnabled, bool isNight)
   saveSettings();
 }
 
-void restSetTransitionType()
-{
-  if (!server.hasArg("type"))
-  {
-    server.send(400, "text/plain", "No transition type provided");
-    log_w("No transition type provided");
-    return;
-  }
-
-  String transitionStr = server.arg("type");
-  transitionStr.toLowerCase();
-  if (transitionStr == "sequential")
-  {
-    transitionBehavior = TransitionBehavior::Sequential;
-    server.send(200, "text/plain", "Transition type set to sequential");
-    log_i("Transition type set to sequential");
-    saveSettings();
-  }
-  else if (transitionStr == "random")
-  {
-    transitionBehavior = TransitionBehavior::Random;
-    server.send(200, "text/plain", "Transition type set to random");
-    log_i("Transition type set to random");
-    saveSettings();
-  }
-  else
-  {
-    server.send(400, "text/plain", "Invalid transition type: " + transitionStr);
-    log_w("Invalid transition type: %s", transitionStr.c_str());
-    return;
-  }
-}
-
 void restSetBrightness(int *brightness, String name)
 {
   if (!server.hasArg("value"))
@@ -214,6 +181,44 @@ void restSetBrightness(int *brightness, String name)
   brightnessLastUpdateMillis = 0;
 }
 
+void restSetSpeedFactor(float *speedFactor, String name) {
+  if (!server.hasArg("value"))
+  {
+    server.send(400, "text/plain", "No speed value provided");
+    log_w("No speed value provided");
+    return;
+  }
+
+  int newSpeed = -1;
+  try
+  {
+    newSpeed = server.arg("value").toInt();
+  }
+  catch (const std::exception &e)
+  {
+    server.send(400, "text/plain", "Invalid speed value" + newSpeed);
+    log_w("Invalid maxSpeed value: %s", e.what());
+    return;
+  }
+ 
+  if (newSpeed < 0 || newSpeed > 100)
+  {
+    server.send(400, "text/plain", "Max speed out of range:" + newSpeed);
+    log_w("Max speed out of range: %d", newSpeed);
+    return;
+  }
+
+  *speedFactor = newSpeed / 100.0;
+  server.send(200, "text/plain",
+              name + " speed set to " + String(*speedFactor));
+  log_i("%s speed set to %.2f", name.c_str(), *speedFactor);
+  saveSettings();
+
+  // update the speed immediately
+  brightnessDelayMs = 0;
+  brightnessLastUpdateMillis = 0;
+}
+
 void restSetTransitionTime(tm *transitionTime, String name)
 {
   if (!server.hasArg("value"))
@@ -244,6 +249,39 @@ void restSetTransitionTime(tm *transitionTime, String name)
   brightnessLastUpdateMillis = 0;
 }
 
+void restSetTransitionType()
+{
+  if (!server.hasArg("type"))
+  {
+    server.send(400, "text/plain", "No transition type provided");
+    log_w("No transition type provided");
+    return;
+  }
+
+  String transitionStr = server.arg("type");
+  transitionStr.toLowerCase();
+  if (transitionStr == "sequential")
+  {
+    transitionBehavior = TransitionBehavior::Sequential;
+    server.send(200, "text/plain", "Transition type set to sequential");
+    log_i("Transition type set to sequential");
+    saveSettings();
+  }
+  else if (transitionStr == "random")
+  {
+    transitionBehavior = TransitionBehavior::Random;
+    server.send(200, "text/plain", "Transition type set to random");
+    log_i("Transition type set to random");
+    saveSettings();
+  }
+  else
+  {
+    server.send(400, "text/plain", "Invalid transition type: " + transitionStr);
+    log_w("Invalid transition type: %s", transitionStr.c_str());
+    return;
+  }
+}
+
 void restSetup()
 {
   server.on("/", HTTP_GET, restIndex);
@@ -263,6 +301,9 @@ void restSetup()
   server.on("/setDayBrightness", HTTP_GET,
             []()
             { restSetBrightness(&dayBrightness, "Day"); });
+  server.on("/setDayMaxSpeed", HTTP_GET,
+            []()
+            { restSetSpeedFactor(&animationDaySpeedFactor, "Day"); });
   server.on("/setDayTransitionTime", HTTP_GET,
             []()
             { restSetTransitionTime(&dayTransitionTime, "Day"); });
@@ -270,6 +311,9 @@ void restSetup()
   server.on("/enableAnimationNight", HTTP_GET,
             []()
             { restSetAnimationState(true, true); });
+  server.on("/setNightMaxSpeed", HTTP_GET,
+            []()
+            { restSetSpeedFactor(&animationNightSpeedFactor, "Night"); });
   server.on("/disableAnimationNight", HTTP_GET,
             []()
             { restSetAnimationState(false, true); });

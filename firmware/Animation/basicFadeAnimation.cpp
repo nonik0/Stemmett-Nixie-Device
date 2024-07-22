@@ -41,7 +41,7 @@ void BasicFadeAnimation::setNextProgression() {
   _fadeProgression = (FadeProgression)((int)_fadeProgression + 1);
   log_d("%d", _fadeProgression);
 
-  int randomDelay = (_fadeProgression == FadeIn) ? random(1000) : 0;
+  int randomDelay = (_fadeProgression == FadeIn) ? random(200 + 800*(_speedFactor/100.0)) : 0;
   switch (_fadeProgression) {
     case FadeOut:
       setRandomFadePattern(0);
@@ -57,8 +57,8 @@ void BasicFadeAnimation::setNextProgression() {
 }
 
 void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialDelay) {
-  int durationMs = random(200, 2000);
-  int initialDelayMultiplier = random(0, 1000);
+  int durationMs = random(200, 200+1800*(_speedFactor/100.0));
+  int initialDelayMultiplier = random(200 + 800*(_speedFactor/100.0));
   int* initialDelays = getRandomInitialDelays((FadePattern)random(FadePatternCount), initialDelayMultiplier);
 
   for (int i = 0; i < NUM_TUBES; i++) {
@@ -66,9 +66,9 @@ void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialD
   }
 }
 
-void BasicFadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void BasicFadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("BasicFadeAnimation::initialize");
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
   Animation::setDuration(30000);
   _fadeProgression = FadeStart;
   setNextProgression();

@@ -2,19 +2,23 @@
 
 #include "cylonScanAnimation.h"
 
-void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("CylonScanAnimation::initialize");
   Animation::setDuration(25000);
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
 
   _activePhaseDuration = random(10000, 20000);
   _isActivePhase = true;
   _eyeDelay = 0;
-  _eyeShiftDelay = random(300,1500) / NUM_TUBES;
+  _eyeShiftDelay = random(300 + 1000*(1-speedFactor), 1500 + 200*(1-speedFactor)) / NUM_TUBES;
   _eyeFadeDuration = random(_eyeShiftDelay, _eyeShiftDelay * 3);
   _eyeIndex = random(2) == 0 ? 0 : NUM_TUBES - 1;
   _eyeDirection = _eyeIndex == 0 ? Left : Right; 
-  _slotDelay = random(10,40);
+  _slotDelay = random(10 + 30*(1-speedFactor), 40 + 20*(1-speedFactor));
+
+  log_d("eyeShiftDelay: %d", _eyeShiftDelay);
+  log_d("eyeFadeDuration: %d", _eyeFadeDuration);
+  log_d("slotDelay: %d", _slotDelay);
 }
 
 TickResult CylonScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {

@@ -123,6 +123,11 @@ const char *indexHtml = R"====(
       <input id="dayBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Day', this.value)">
     </div>
     <br/>
+    <div>
+      Speed:
+      <input id="dayMaxSpeed" type="range" min="0" max="100" value="100" onchange="setMaxSpeed('Day', this.value)">
+    </div>
+    <br/>
     <div id="animationDaySwitches"></div>
   </div>
   <br/>
@@ -136,6 +141,11 @@ const char *indexHtml = R"====(
     <div>
       Brightness:
       <input id="nightBrightness" type="range" min="0" max="100" value="50" onchange="setBrightness('Night', this.value)">
+    </div>
+    <br/>
+    <div>
+      Speed:
+      <input id="nightMaxSpeed" type="range" min="0" max="100" value="25" onchange="setMaxSpeed('Night', this.value)">
     </div>
     <br/>
     <div id="animationNightSwitches"></div>
@@ -183,8 +193,10 @@ function initializePage(deviceState) {
     document.getElementById('systemTime').innerText = deviceState.systemTime;
     document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
+    document.getElementById('dayMaxSpeed').value = deviceState.dayMaxSpeed;
     document.getElementById('dayTransitionTime').value = deviceState.dayTransitionTime;
     document.getElementById('nightBrightness').value = deviceState.nightBrightness;
+    document.getElementById('nightMaxSpeed').value = deviceState.nightMaxSpeed;
     document.getElementById('nightTransitionTime').value = deviceState.nightTransitionTime;
     document.getElementById(isNight ? 'nightBrightness' : 'dayBrightness').classList.add('active-slider');
 
@@ -229,16 +241,20 @@ function syncTime() {
   fetch('/syncTime');
 }
 
-function setTransitionType(transitionType) {
-  fetch(`/setTransitionType?type=${transitionType}`);
-}
-
 function setBrightness(timeOfDay, brightness) {
   fetch(`/set${timeOfDay}Brightness?value=${brightness}`);
 }
 
+function setMaxSpeed(timeOfDay, speed) {
+  fetch(`/set${timeOfDay}MaxSpeed?value=${speed}`);
+}
+
 function setTransitionTime(timeOfDay, time) {
   fetch(`/set${timeOfDay}TransitionTime?value=${time}`);
+}
+
+function setTransitionType(transitionType) {
+  fetch(`/setTransitionType?type=${transitionType}`);
 }
 
 </script>

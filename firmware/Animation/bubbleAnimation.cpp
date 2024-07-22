@@ -2,9 +2,9 @@
 
 #include "bubbleAnimation.h"
 
-void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("BubbleAnimation::initialize");
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
   Animation::setDuration(55000);
 
   _activePhaseDuration = random(10000,20000);

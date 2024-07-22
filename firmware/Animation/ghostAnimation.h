@@ -17,6 +17,6 @@ class GhostAnimation : public Animation {
     Ghost_t _ghost[NUM_TUBES];
     FadeHelper _fadeHelper;
   public:
-    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) override;
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) override;
     TickResult handleTick(Tube tubes[NUM_TUBES]) override;
 };

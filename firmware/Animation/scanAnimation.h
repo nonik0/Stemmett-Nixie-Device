@@ -20,6 +20,6 @@ class ScanAnimation : public Animation {
     FadeHelper _fadeHelper;
     SlotHelper _slotHelper;
   public:
-    void initialize(Tube tubes[NUM_TUBES], int maxBrightness);
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor);
     TickResult handleTick(Tube tubes[NUM_TUBES]);
 };

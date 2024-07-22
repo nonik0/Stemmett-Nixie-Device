@@ -2,10 +2,10 @@
 
 #include "randomScanAnimation.h"
 
-void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("RandomScanAnimation::initialize");
   Animation::setDuration(10000);
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
   _activeTube = -1;
   _cathodeDelay = 0;
   for (int i = 0; i < NUM_TUBES; i++) {
@@ -61,7 +61,7 @@ TickResult RandomScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     }
 
     _activeTube = nextTube;
-    _cathodeDelay = 30;
+    _cathodeDelay = 20+10*(_speedFactor/100.0);
     result = {true, true};
   }
 

@@ -2,9 +2,9 @@
 #include "nixieDriver.h"
 #include "rest.h"
 #include "rtc.h"
-#include "services.h"
 #include "tubeConfiguration.h"
 #include "tubes.h"
+#include "wifiServices.h"
 
 Animation *animations[NUM_ANIMATIONS];
 Animation *curAnimation;
@@ -16,6 +16,7 @@ volatile bool refreshTick = false;
 int brightness = 150;
 int brightnessLastUpdateMillis = 0;
 int brightnessDelayMs = 0;
+float speedFactor = 1;
 
 void IRAM_ATTR refreshTimerCallback()
 {
@@ -33,8 +34,10 @@ bool ableToTransition(int animationIndex = -1)
         return true;
       else if (isNight && animationsEnabledNight[i])
         return true;
-      return false;
     }
+
+    log_d("No animations enabled, not able to transition");
+    return false;
   }
   else
   {
@@ -56,12 +59,6 @@ void initializeAllAnimations()
   animations[AnimationType::RandomScan] = new RandomScanAnimation();
   animations[AnimationType::Scan] = new ScanAnimation();
   animations[AnimationType::SlotMachine] = new SlotMachineAnimation();
-
-  // enable animations
-  for (int i = 0; i < NUM_ANIMATIONS; i++)
-  {
-    animationsEnabledDay[i] = true;
-  }
 }
 
 void initializeNewAnimation()
@@ -87,7 +84,7 @@ void initializeNewAnimation()
 
   curAnimationIndex = newAnimationIndex;
   curAnimation = animations[newAnimationIndex];
-  curAnimation->initialize(Tubes, brightness);
+  curAnimation->initialize(Tubes, brightness, speedFactor);
   log_d("Initialized animation %d", newAnimationIndex);
 }
 
@@ -111,7 +108,7 @@ void handleRefresh()
   }
 }
 
-void updateBrightness()
+void updateBrightnessAndSpeed()
 {
   if (millis() - brightnessLastUpdateMillis > brightnessDelayMs)
   {
@@ -135,10 +132,13 @@ void updateBrightness()
 
     isNight = minsToDay < minsToNight;
     brightness = isNight ? nightBrightness : dayBrightness;
+    speedFactor = isNight ? animationNightSpeedFactor : animationDaySpeedFactor;
     delaySecs = 60 * (isNight ? minsToDay : minsToNight);
 
     String timeOfDay = isNight ? "night" : "day";
-    log_i("Setting brightness to %d (%s), next check in %dm", brightness, timeOfDay, delaySecs/60);
+    log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs/60);
+
+    curAnimation->setBrightness(brightness);
 
     brightnessDelayMs = delaySecs * 1000;
     brightnessLastUpdateMillis = millis();
@@ -169,7 +169,7 @@ void setup()
 
   // start first animation
   curAnimation = animations[AnimationType::Name];
-  curAnimation->initialize(Tubes, brightness);
+  curAnimation->initialize(Tubes, brightness, speedFactor);
 
   log_i("Setup complete");
 }
@@ -177,7 +177,7 @@ void setup()
 void loop()
 {
   handleRefresh();
-  updateBrightness();
+  updateBrightnessAndSpeed();
   checkWifiStatus();
   server.handleClient();
   ArduinoOTA.handle();

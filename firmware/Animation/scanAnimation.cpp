@@ -2,18 +2,18 @@
 
 #include "scanAnimation.h"
 
-void ScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void ScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("ScanAnimation::initialize");
   Animation::setDuration(25000);
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
 
   _isScanComplete = true;
   _isSlotScan = random(4) > 0;
   _scanDelay = 0;
   _scanInactiveBrightness = _maxBrightness / random(4,8);
   _scanIndex = random(2) == 0 ? -1 : NUM_TUBES;
-  _scanPauseDelay = random(0,500);
-  _scanShiftDelay = random(150,600) / NUM_TUBES;
+  _scanPauseDelay = random(200*(1-speedFactor),500);
+  _scanShiftDelay = random(150,600) / NUM_TUBES * speedFactor;
   _scanDirection = _scanIndex <= 0 ? Left : Right;
   _scansLeft = random(15,30);
 }

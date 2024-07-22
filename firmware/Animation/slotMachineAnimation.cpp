@@ -2,9 +2,9 @@
 
 #include "slotMachineAnimation.h"
 
-void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("SlotMachineAnimation::initialize");
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
   Animation::setDuration(26000);
 
   _brightnessDelay = 0;
@@ -14,7 +14,7 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) 
   }
 
   // random phase direction, length and number of periods
-  int brightnessPeriodMs = random(500,2500);
+  int brightnessPeriodMs = random(500+1500*(1-_speedFactor/100.0),2500);
   _brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
   _totalCyclesLeft = random(6, 10);
   _direction = random(2) == 0 ? Left : Right;

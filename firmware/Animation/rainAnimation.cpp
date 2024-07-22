@@ -2,14 +2,14 @@
 
 #include "rainAnimation.h"
 
-void RainAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void RainAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("RainAnimation::initialize");
-  Animation::initialize(tubes, maxBrightness);
+  Animation::initialize(tubes, maxBrightness, speedFactor);
   Animation::setDuration(25000);
 
   _activePhaseDuration = random(10000,20000);
   _newRaindropCooldown = 0;
-  _baseCooldown = random(5,25);
+  _baseCooldown = random(5,10 + 10*(1 - speedFactor));
   for (int i = 0; i < NUM_TUBES; i++) {
     _raindrops[i].isActive = false;
   }
@@ -54,7 +54,7 @@ TickResult RainAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       : _raindrops[tubeIndex].isActive && random(6) != 0;
 
     if (_raindrops[tubeIndex].isActive) {
-      _raindrops[tubeIndex].fadeDuration = random(100, 600);
+      _raindrops[tubeIndex].fadeDuration = random(50 + 50*(_speedFactor*100.0), 300+300*(1 - _speedFactor/100.0));
       _raindrops[tubeIndex].initialBrightness = random(0.7 * _maxBrightness, _maxBrightness);
       
       _fadeHelper.setTubeBrightness(tubeIndex, _raindrops[tubeIndex].initialBrightness);

@@ -7,9 +7,9 @@ class NameAnimation : public Animation {
   private:
     bool  _firstTick;
   public:
-    void initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+    void initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
       log_d("NameAnimation::initialize");
-      Animation::initialize(tubes, maxBrightness);
+      Animation::initialize(tubes, maxBrightness, speedFactor);
       Animation::setDuration(2000);
       _firstTick = true;
     }

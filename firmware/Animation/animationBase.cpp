@@ -2,8 +2,9 @@
 
 #include "animationBase.h"
 
-void Animation::initialize(Tube tubes[NUM_TUBES], int maxBrightness) {
+void Animation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   _maxBrightness = maxBrightness;
+  _speedFactor = speedFactor;
 }
 
 TickResult Animation::handleTick(Tube tubes[NUM_TUBES]) {
@@ -20,4 +21,11 @@ void Animation::setComplete() {
 
 void Animation::setBrightness(int brightness) { _maxBrightness = brightness; }
 
-void Animation::setDuration(int durationMs) { _durationMs = durationMs; }
+void Animation::setDuration(int durationMs) { _durationMs = durationMs; }\
+
+void Animation::setSpeed(float speedFactor) { 
+  if (speedFactor < 0) speedFactor = 0;
+  if (speedFactor > 1) speedFactor = 1;
+
+  _speedFactor = speedFactor;
+}
