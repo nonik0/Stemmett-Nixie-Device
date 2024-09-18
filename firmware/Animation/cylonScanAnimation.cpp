@@ -10,11 +10,18 @@ void CylonScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, fl
   _activePhaseDuration = random(10000, 20000);
   _isActivePhase = true;
   _eyeDelay = 0;
-  _eyeShiftDelay = random(300 + 1000*(1-speedFactor), 1500 + 200*(1-speedFactor)) / NUM_TUBES;
+
+  int minEyeShiftDelay = 300 + 700*(1-speedFactor); // slowest: 1000, fastest: 300
+  int maxEyeShiftDelay = 1200 + 1300*(1-speedFactor); // slowest: 2500, fastest: 1200
+  _eyeShiftDelay = random(minEyeShiftDelay, maxEyeShiftDelay) / NUM_TUBES;
+
   _eyeFadeDuration = random(_eyeShiftDelay, _eyeShiftDelay * 3);
   _eyeIndex = random(2) == 0 ? 0 : NUM_TUBES - 1;
   _eyeDirection = _eyeIndex == 0 ? Left : Right; 
-  _slotDelay = random(10 + 30*(1-speedFactor), 40 + 20*(1-speedFactor));
+
+  int minSlotDelay = 10 + 30*(1-speedFactor); // slowest: 40, fastest: 10
+  int maxSlotDelay = 40 + 20*(1-speedFactor); // slowest: 60, fastest: 40
+  _slotDelay = random(minSlotDelay, maxSlotDelay);
 
   log_d("eyeShiftDelay: %d", _eyeShiftDelay);
   log_d("eyeFadeDuration: %d", _eyeFadeDuration);

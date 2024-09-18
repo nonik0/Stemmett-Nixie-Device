@@ -61,7 +61,8 @@ TickResult RandomScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     }
 
     _activeTube = nextTube;
-    _cathodeDelay = 20+10*(_speedFactor/100.0);
+
+    _cathodeDelay = 30 + 30 * (1 - _speedFactor);
     result = {true, true};
   }
 

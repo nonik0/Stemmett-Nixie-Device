@@ -29,7 +29,6 @@ TickResult GhostAnimation::handleTick(Tube tubes[NUM_TUBES]) {
 
   bool isActivePhase = _activePhaseDuration > 0;
   int activeGhostCountTarget = 5;
-  float speedFactor = _speedFactor / 100.0;
 
   // check if complete if not in active phase
   if (!isActivePhase) {
@@ -58,17 +57,22 @@ TickResult GhostAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     } while (_ghost[tubeIndex].isActive || (!isActivePhase && tubes[tubeIndex].Brightness == _maxBrightness));
 
     int targetBrightness = isActivePhase ? random(20, _maxBrightness) : _maxBrightness;
-    int fadeDuration = random(300, 100+600*speedFactor);
+    int minFadeDuration = 200 + 400 *(1 - _speedFactor); // slowest: 600, fastest: 200
+    int maxFadeDuration = 800 + 1200 *(1 - _speedFactor); // slowest: 2000, fastest: 800
+    int fadeDuration = random(minFadeDuration, maxFadeDuration);
 
     _ghost[tubeIndex].isActive = true;
-    _ghost[tubeIndex].fadeDuration = fadeDuration; // TODO: test
+    _ghost[tubeIndex].fadeDuration = fadeDuration;
     _ghost[tubeIndex].targetBrightnessLow = random(0, 30);
     _ghost[tubeIndex].targetBrightnessHigh = targetBrightness;
     
     _fadeHelper.setTubeFade(tubeIndex, targetBrightness, fadeDuration);
 
     _activeGhostCount++;
-    _newGhostCooldown = random(100,100+800*(1-speedFactor)); // TODO: randomize
+
+    int minGhostCooldown = 60 + 140 * (1 - _speedFactor); // slowest: 200, fastest: 60
+    int maxGhostCooldown = 800 + 1200 * (1 - _speedFactor); // slowest: 2000, fastest: 800
+    _newGhostCooldown = random(minGhostCooldown, maxGhostCooldown); // TODO: randomize
   }
 
   // handle ghost fade down and deactivation

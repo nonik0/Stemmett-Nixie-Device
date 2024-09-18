@@ -9,7 +9,10 @@ void RainAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float s
 
   _activePhaseDuration = random(10000,20000);
   _newRaindropCooldown = 0;
-  _baseCooldown = random(5,10 + 10*(1 - speedFactor));
+
+  int minBaseCooldown = 5 + 15 * (1 - speedFactor); // slowest: 20, fastest: 5
+  int maxBaseCooldown = 25 + 175 * (1 - speedFactor); // slowest: 200, fastest: 25
+  _baseCooldown = random(minBaseCooldown, maxBaseCooldown);
   for (int i = 0; i < NUM_TUBES; i++) {
     _raindrops[i].isActive = false;
   }
@@ -54,7 +57,9 @@ TickResult RainAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       : _raindrops[tubeIndex].isActive && random(6) != 0;
 
     if (_raindrops[tubeIndex].isActive) {
-      _raindrops[tubeIndex].fadeDuration = random(50 + 50*(_speedFactor*100.0), 300+300*(1 - _speedFactor/100.0));
+      int minFadeDuration = 100 + 300*(_speedFactor*100.0); // slowest: 400, fastest: 100
+      int maxFadeDuration = 600 + 600*(1 - _speedFactor/100.0); // slowest: 1200, fastest: 600
+      _raindrops[tubeIndex].fadeDuration = random(minFadeDuration, maxFadeDuration);
       _raindrops[tubeIndex].initialBrightness = random(0.7 * _maxBrightness, _maxBrightness);
       
       _fadeHelper.setTubeBrightness(tubeIndex, _raindrops[tubeIndex].initialBrightness);

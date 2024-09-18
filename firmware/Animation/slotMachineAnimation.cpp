@@ -14,7 +14,9 @@ void SlotMachineAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, 
   }
 
   // random phase direction, length and number of periods
-  int brightnessPeriodMs = random(500+1500*(1-_speedFactor/100.0),2500);
+  int minBrightnessPeriodMs = 500 + 500 * (1 - speedFactor); // slowest: 1000, fastest: 500
+  int maxBrightnessPeriodMs = 2000 + 1000 * (1 - speedFactor); // slowest: 3000, fastest: 2000
+  int brightnessPeriodMs = random(minBrightnessPeriodMs, maxBrightnessPeriodMs);
   _brightnessPhaseStepMs = brightnessPeriodMs / BrightnessPeriodSteps;
   _totalCyclesLeft = random(6, 10);
   _direction = random(2) == 0 ? Left : Right;
@@ -51,7 +53,8 @@ TickResult SlotMachineAnimation::handleTick(Tube tubes[NUM_TUBES]) {
       if (!_slotHelper.isSlotCycling(i)) {
         // activate tubes at starting phase of left-most tube
         if (tubePhaseDeg == _tubeTriggerPhase && _totalCyclesLeft > 0) {
-          _slotHelper.enableCycling(i);
+          int cycleDelay = 45 + 45 * (1 - _speedFactor); // slowest: 90, fastest: 45
+          _slotHelper.enableCycling(i, cycleDelay);
         }
         else {
           continue;

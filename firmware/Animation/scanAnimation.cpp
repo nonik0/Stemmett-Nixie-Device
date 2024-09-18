@@ -12,10 +12,19 @@ void ScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float s
   _scanDelay = 0;
   _scanInactiveBrightness = _maxBrightness / random(4,8);
   _scanIndex = random(2) == 0 ? -1 : NUM_TUBES;
-  _scanPauseDelay = random(200*(1-speedFactor),500);
-  _scanShiftDelay = random(150,600) / NUM_TUBES * speedFactor;
+
+  int minPauseDelay = 200 * (1 - speedFactor); // slowest: 200, fastest: 0
+  int maxPauseDelay = 500 + 500 * (1 - speedFactor); // slowest: 1000, fastest: 500
+  _scanPauseDelay = random(minPauseDelay, maxPauseDelay);
+
+  int minShiftDelay = 100 + 200 * (1 - speedFactor); // slowest: 300, fastest: 100
+  int maxShiftDelay = 500 + 500 * (1 - speedFactor); // slowest: 1000, fastest: 500
+  _scanShiftDelay = random(minShiftDelay, maxShiftDelay) / NUM_TUBES;
   _scanDirection = _scanIndex <= 0 ? Left : Right;
-  _scansLeft = random(15,30);
+  
+  int minScans = 5 + 5 * speedFactor;
+  int maxScans = 10 + 10 * speedFactor;
+  _scansLeft = random(minScans, maxScans);
 }
 
 TickResult ScanAnimation::handleTick(Tube tubes[NUM_TUBES]) {

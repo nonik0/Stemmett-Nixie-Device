@@ -112,7 +112,7 @@ void updateBrightnessAndSpeed()
 {
   if (millis() - brightnessLastUpdateMillis > brightnessDelayMs)
   {
-    log_d("Updating brightness");
+    log_d("Updating brightness and animation speed");
 
     int delaySecs, hour, minute, second;
 
@@ -179,6 +179,12 @@ void loop()
   handleRefresh();
   updateBrightnessAndSpeed();
   checkWifiStatus();
-  server.handleClient();
+  try {
+    server.handleClient();
+  }
+  catch (const std::exception &e)
+  {
+    log_e("Server error: %s", e.what());
+  }
   ArduinoOTA.handle();
 }

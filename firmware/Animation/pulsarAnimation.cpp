@@ -14,13 +14,17 @@ void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float
   _finalEjection = false;
 
   _pulsarIndex = (random(2) == 0) ? -StartOffset : NUM_TUBES - 1 + StartOffset;
-  _pulsarSpeed = random(1000,500+1500*(speedFactor));
+
+  int minSpeed = 1000 + 1000 * (1 - speedFactor); // slowest: 2000, fastest: 1000
+  int maxSpeed = 1000 + 1500 * (1 - speedFactor); // slowest: 3000, fastest: 2500
+  _pulsarSpeed = random(minSpeed, maxSpeed);
   _pulsarMovementDelay = _pulsarSpeed;
   _pulsarDirection = _pulsarIndex <= 0 ? Left : Right;
 
   // pulsar cycling slot delay varies based on tube type
+  int baseSlotCycleMs = 40 + 40 * (1 - speedFactor); // slowest: 80, fastest: 40
   for (int i = 0; i < NUM_TUBES; i++) {
-    _pulsarSlotDelay[i] = 14 - TubeCathodeCount[tubes[i].Type];
+    _pulsarSlotDelay[i] = baseSlotCycleMs / TubeCathodeCount[tubes[i].Type]; // each cathode gets equal time
   }
 
   _ejectionDelay = 0;
@@ -71,13 +75,16 @@ void PulsarAnimation::handleEjectionSpawning() {
       ejection[inactiveEjectionIndex].delay = 0;
       ejection[inactiveEjectionIndex].index = _pulsarIndex;
             
+      int minEjectionSpeed = 30 + 60 * (1 - _speedFactor); // slowest: 90, fastest: 30
+      int maxEjectionSpeed = 200 + 400 * (1 - _speedFactor); // slowest: 400, fastest: 200
+
       if (!_finalEjection) {
         ejection[inactiveEjectionIndex].brightness = random(0.1 * _maxBrightness, 0.4 * _maxBrightness);
         ejection[inactiveEjectionIndex].direction = (random(2) == 0) ? Left : Right;
         // if pulsar is not visible then ejections travels shorter distance
         ejection[inactiveEjectionIndex].distance =  random(1, NUM_TUBES); //isVisible(_pulsarIndex) ? random(2, NUM_TUBES-1) : random(1, OffScreenOffset+1); 
         ejection[inactiveEjectionIndex].slotActive = true;
-        ejection[inactiveEjectionIndex].speed = random(30, 30+140*(_speedFactor/100.0));
+        ejection[inactiveEjectionIndex].speed = random(minEjectionSpeed, maxEjectionSpeed);
       }
       else {
         // last ejection will reset tubes to primary cathode
@@ -85,7 +92,7 @@ void PulsarAnimation::handleEjectionSpawning() {
         ejection[inactiveEjectionIndex].direction = (Direction)-_pulsarDirection;
         ejection[inactiveEjectionIndex].distance = NUM_TUBES + StartOffset;
         ejection[inactiveEjectionIndex].slotActive = true;
-        ejection[inactiveEjectionIndex].speed = random(70, 30+100*(_speedFactor/100.0));
+        ejection[inactiveEjectionIndex].speed = random(minEjectionSpeed*2, maxEjectionSpeed);
         
         delay = 0x7FFFFFFF;
       }
@@ -121,7 +128,9 @@ void PulsarAnimation::handleEjectionMovement() {
           if (isVisible(ejection[i].index)) {
             // new tube positions updates
             if (ejection[i].slotActive) {
-              _slotHelper.enableCycling(ejection[i].index, random(30, 20+50*(_speedFactor/100.0)));
+              int minCycleMs = 25 + 15 * (1 - _speedFactor); // slowest: 40, fastest: 25
+              int maxCycleMs = 75 + 25 * (1 - _speedFactor); // slowest: 100, fastest: 70
+              _slotHelper.enableCycling(ejection[i].index, random(minCycleMs, maxCycleMs));
             }
             else {
               _slotHelper.setRandomCathode(ejection[i].index);

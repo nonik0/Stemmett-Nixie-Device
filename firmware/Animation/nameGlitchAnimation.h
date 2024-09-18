@@ -42,9 +42,17 @@ class NameGlitchAnimation : public Animation {
 
       for (int i = 0; i < NUM_TUBES; i++) {
         if (glitch[i].cathode != 0xFF) {
-          glitch[i].delay = random(0, 1000);
-          glitch[i].offDelayRange = random(300, 700);
-          glitch[i].onDelayRange = random(10, 20);
+          int minDelay = 200 * (1 - speedFactor); // slowest: 200, fastest: 0
+          int maxDelay = 1000 + 2000 * (1 - speedFactor); // slowest: 3000, fastest: 1000
+          glitch[i].delay = random(minDelay, maxDelay);
+
+          int minOffDelay = 300 + 600 * (1 - speedFactor); // slowest: 600, fastest: 300
+          int maxOffDelay = 700 + 1400 * (1 - speedFactor); // slowest: 2100, fastest: 700         
+          glitch[i].offDelayRange = random(minOffDelay, maxOffDelay);
+
+          int minOnDelay = 10 + 20 * (1 - speedFactor); // slowest: 30, fastest: 10
+          int maxOnDelay = 20 + 70 * (1 - speedFactor); // slowest: 90, fastest: 20
+          glitch[i].onDelayRange = random(minOnDelay, maxOnDelay);
         }
       }
     }

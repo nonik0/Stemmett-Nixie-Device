@@ -57,8 +57,10 @@ void BasicFadeAnimation::setNextProgression() {
 }
 
 void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialDelay) {
-  int durationMs = random(200, 200+1800*(_speedFactor/100.0));
-  int initialDelayMultiplier = random(200 + 800*(_speedFactor/100.0));
+  int minDurationMs = 200 + 800 * (1 - _speedFactor); // slowest: 1000, fastest: 200
+  int maxDurationMs = 600 + 1400 * (1 - _speedFactor); // slowest: 2000, fastest: 600
+  int durationMs = random(minDurationMs, maxDurationMs);
+  int initialDelayMultiplier = random(200 + 800 * (1 - _speedFactor)); // slowest: 1000, fastest: 200
   int* initialDelays = getRandomInitialDelays((FadePattern)random(FadePatternCount), initialDelayMultiplier);
 
   for (int i = 0; i < NUM_TUBES; i++) {

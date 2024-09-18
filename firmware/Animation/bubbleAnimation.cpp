@@ -9,7 +9,9 @@ void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float
 
   _activePhaseDuration = random(10000,20000);
   _newBubbleCooldown = 0;
-  _baseCooldown = random(20,100);
+  int minBaseCooldown = 15 + 45 * (1 - speedFactor); // slowest: 60, fastest: 15
+  int maxBaseCooldown = 60 + 140 * (1 - speedFactor); // slowest: 200, fastest: 60
+  _baseCooldown = random(minBaseCooldown, maxBaseCooldown);
   for (int i = 0; i < NUM_TUBES; i++) {
     _bubble[i].isActive = true;
   }
@@ -38,6 +40,7 @@ TickResult BubbleAnimation::handleTick(Tube tubes[NUM_TUBES]) {
     }
 
     if (tubeCompletedCount == NUM_TUBES) {
+      log_d("All tubes done!");
       setComplete();
       return {false, false};
     }
