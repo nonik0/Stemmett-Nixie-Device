@@ -6,6 +6,8 @@
 #include "tubes.h"
 #include "wifiServices.h"
 
+bool wifiInit = false;
+
 Animation *animations[NUM_ANIMATIONS];
 Animation *curAnimation;
 int curAnimationIndex = 0;
@@ -136,7 +138,7 @@ void updateBrightnessAndSpeed()
     delaySecs = 60 * (isNight ? minsToDay : minsToNight);
 
     String timeOfDay = isNight ? "night" : "day";
-    log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs/60);
+    log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs / 60);
 
     curAnimation->setBrightness(brightness);
 
@@ -147,16 +149,24 @@ void updateBrightnessAndSpeed()
 
 void setup()
 {
-  delay(2000);
   Serial.begin(115200);
-  log_i("Starting setup");
+  //while(!Serial) delay(10);
+  log_d("Starting setup");
+
+
+  delay(10000);
+  log_d("After delay");
+  Serial.println("After delay");
 
   nixieSetup();
-  wifiSetup();
-  otaSetup();
-  restSetup();
-  mDnsSetup();
-  rtcSetup();
+  // wifiInit = wifiSetup();
+  // if (wifiInit)
+  // {
+  //   otaSetup();
+  //   restSetup();
+  //   mDnsSetup();
+  // }
+  // rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
@@ -176,15 +186,22 @@ void setup()
 
 void loop()
 {
+  log_d("Looping");
+  Serial.println("loop serial");
+  delay(10);
   handleRefresh();
   updateBrightnessAndSpeed();
-  checkWifiStatus();
-  try {
-    server.handleClient();
-  }
-  catch (const std::exception &e)
+  if (wifiInit)
   {
-    log_e("Server error: %s", e.what());
+    checkWifiStatus();
+    try
+    {
+      server.handleClient();
+    }
+    catch (const std::exception &e)
+    {
+      log_e("Server error: %s", e.what());
+    }
+    ArduinoOTA.handle();
   }
-  ArduinoOTA.handle();
 }

@@ -57,6 +57,8 @@ void rtcSyncTime() {
 }
 
 void rtcSetup() {
+  log_d("Setting up RTC");
+
   // swap I2C clock and data because the board is dun goofed for the custom 4-pin RTC port
   if (!twoWire.begin(9, 8)) {
     log_w("Couldn't find I2C bus");
@@ -68,4 +70,6 @@ void rtcSetup() {
 
   configTime(GmtOffsetSecs, DstOffsetSecs, NtpServer);
   rtcSyncTime();
+
+  log_d("RTC setup complete");
 }

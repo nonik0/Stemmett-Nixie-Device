@@ -41,8 +41,9 @@ void otaSetup()
   log_i("OTA server running");
 }
 
-void wifiSetup()
+bool wifiSetup()
 {
+  log_d("Setting up WiFi");
   // WiFi.disconnect(true, true);
   // WiFi.mode(WIFI_STA);
   // WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -66,7 +67,11 @@ void wifiSetup()
   //   ESP.restart();
   // }
 
-  bool result = wifiManager.autoConnect("Stemmett");
+  // wifiManager.setConfigPortalTimeout(180);
+  // wifiManager.setConnectTimeout(10);
+  // wifiManager.setDarkMode(true);
+  // bool result = wifiManager.autoConnect("Stemmett");
+  bool result = false;
 
   if (result)
   {
@@ -74,8 +79,12 @@ void wifiSetup()
   }
   else
   {
-    return;
+    log_e("Failed to connect to WiFi");
+    return false;
   }
+
+  log_i("WiFi setup complete");
+  return true;
 }
 
 int wifiDisconnects = 0;

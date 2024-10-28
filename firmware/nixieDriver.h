@@ -7,6 +7,7 @@
 Pwm pwm;
 
 void nixieSetup() {
+  log_d("Setting up nixie tubes");
   pinMode(EN_PIN, OUTPUT);
   digitalWrite(EN_PIN, LOW);
   pinMode(LATCH_PIN, OUTPUT);
@@ -26,6 +27,8 @@ void nixieSetup() {
     pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION,
               Tubes[i].PwmPhase);
   }
+
+  log_d("Nixie tubes setup complete");
 }
 
 void nixieDisplay(Tube tubes[NUM_TUBES]) {
