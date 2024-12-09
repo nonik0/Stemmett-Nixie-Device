@@ -55,8 +55,8 @@ void loadSettings()
       String key = "A" + String(i);
       animationsEnabledNight[i] = preferences.getBool(key.c_str(), true);
     }
-    animationDaySpeedFactor = preferences.getFloat("ds", 100);
-    animationNightSpeedFactor = preferences.getFloat("ns", 100);
+    animationDaySpeedFactor = preferences.getFloat("ds", 1.0F);
+    animationNightSpeedFactor = preferences.getFloat("ns", 1.0F);
     transitionBehavior = (TransitionBehavior)preferences.getUChar("tb", 0);
     preferences.getBytes("dtt", &dayTransitionTime,
                          sizeof(dayTransitionTime));
@@ -83,8 +83,8 @@ void loadSettings()
     animationsEnabledNight[AnimationType::Scan] = true;
     animationsEnabledNight[AnimationType::SlotMachine] = true;
 
-    animationDaySpeedFactor = 100;
-    animationNightSpeedFactor = 15;
+    animationDaySpeedFactor = 1.0F;
+    animationNightSpeedFactor = 0.15F;
     transitionBehavior = TransitionBehavior::Sequential;
     dayTransitionTime = {8, 0, 0, 0, 0, 0, 0, 0, 0};
     dayBrightness = 255;

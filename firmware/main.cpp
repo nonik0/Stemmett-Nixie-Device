@@ -11,6 +11,7 @@ bool wifiInit = false;
 Animation *animations[NUM_ANIMATIONS];
 Animation *curAnimation;
 int curAnimationIndex = 0;
+int curAnimationIndexSeq = 0;
 
 hw_timer_t *refreshTimer;
 volatile bool refreshTick = false;
@@ -72,11 +73,16 @@ void initializeNewAnimation()
   {
     do
     {
+      // both exclude name animation at index 0
       if (transitionBehavior == TransitionBehavior::Sequential)
-        newAnimationIndex = 1 + (curAnimationIndex++) % (NUM_ANIMATIONS - 1);
+      {
+        curAnimationIndex = (curAnimationIndex + 1) % NUM_ANIMATIONS;
+      }
       else if (transitionBehavior == TransitionBehavior::Random)
+      {
         newAnimationIndex = random(1, NUM_ANIMATIONS);
-    } while (!ableToTransition(newAnimationIndex) || newAnimationIndex == curAnimationIndex);
+      }
+    } while (!ableToTransition(newAnimationIndex) || newAnimationIndex == curAnimationIndex || newAnimationIndex == AnimationType::Name);
     log_d("Switching to animation %d", newAnimationIndex);
   }
   else
@@ -150,23 +156,18 @@ void updateBrightnessAndSpeed()
 void setup()
 {
   Serial.begin(115200);
-  //while(!Serial) delay(10);
+  delay(5000);
   log_d("Starting setup");
 
-
-  delay(10000);
-  log_d("After delay");
-  Serial.println("After delay");
-
   nixieSetup();
-  // wifiInit = wifiSetup();
-  // if (wifiInit)
-  // {
-  //   otaSetup();
-  //   restSetup();
-  //   mDnsSetup();
-  // }
-  // rtcSetup();
+  wifiInit = wifiSetup();
+  if (wifiInit)
+  {
+    otaSetup();
+    restSetup();
+    mDnsSetup();
+  }
+  rtcSetup();
 
   refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
@@ -186,11 +187,9 @@ void setup()
 
 void loop()
 {
-  log_d("Looping");
-  Serial.println("loop serial");
-  delay(10);
   handleRefresh();
   updateBrightnessAndSpeed();
+
   if (wifiInit)
   {
     checkWifiStatus();

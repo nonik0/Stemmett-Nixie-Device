@@ -67,11 +67,10 @@ bool wifiSetup()
   //   ESP.restart();
   // }
 
-  // wifiManager.setConfigPortalTimeout(180);
-  // wifiManager.setConnectTimeout(10);
-  // wifiManager.setDarkMode(true);
-  // bool result = wifiManager.autoConnect("Stemmett");
-  bool result = false;
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConnectTimeout(10);
+  wifiManager.setDarkMode(true);
+  bool result = wifiManager.autoConnect("Stemmett");
 
   if (result)
   {
