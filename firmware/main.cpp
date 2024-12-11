@@ -1,25 +1,31 @@
 #include "Animation/animation.h"
 #include "nixieDriver.h"
-#include "rest.h"
 #include "rtc.h"
 #include "tubeConfiguration.h"
 #include "tubes.h"
 #include "wifiServices.h"
 
-bool wifiInit = false;
+#define LIGHT_SENSOR_PIN 8
 
+// animation variables
 Animation *animations[NUM_ANIMATIONS];
 Animation *curAnimation;
 int curAnimationIndex = 0;
 int curAnimationIndexSeq = 0;
-
 hw_timer_t *refreshTimer;
 volatile bool refreshTick = false;
 
-int brightness = 150;
-int brightnessLastUpdateMillis = 0;
-int brightnessDelayMs = 0;
-float speedFactor = 1;
+WifiServices wifiServices;
+
+// modified by rest API and displaySettingsTask
+volatile int brightness = 150;
+volatile float speedFactor = 1;
+
+// timers for brightness and light sensor
+unsigned long brightnessLastUpdateMillis = 0;
+unsigned long brightnessUpdateIntervalMs = 0;
+unsigned long lightSensorLastUpdateMillis = 0;
+const unsigned long lightSensorIntervalMs = 1000;
 
 void IRAM_ATTR refreshTimerCallback()
 {
@@ -33,9 +39,9 @@ bool ableToTransition(int animationIndex = -1)
     // check if any animations are enabled other than the name animation
     for (int i = 1; i < NUM_ANIMATIONS; i++)
     {
-      if (!isNight && animationsEnabledDay[i])
+      if (!isNightMode && animationsEnabledDay[i])
         return true;
-      else if (isNight && animationsEnabledNight[i])
+      else if (isNightMode && animationsEnabledNight[i])
         return true;
     }
 
@@ -44,11 +50,11 @@ bool ableToTransition(int animationIndex = -1)
   }
   else
   {
-    return isNight ? animationsEnabledNight[animationIndex] : animationsEnabledDay[animationIndex];
+    return isNightMode ? animationsEnabledNight[animationIndex] : animationsEnabledDay[animationIndex];
   }
 }
 
-void initializeAllAnimations()
+void instantiateAllAnimations()
 {
   // initialize animations
   animations[AnimationType::BasicFade] = new BasicFadeAnimation();
@@ -64,9 +70,9 @@ void initializeAllAnimations()
   animations[AnimationType::SlotMachine] = new SlotMachineAnimation();
 }
 
-void initializeNewAnimation()
+void initializeNextAnimation()
 {
-  log_d("Initializing new animation");
+  log_d("Initializing next animation");
 
   int newAnimationIndex;
   if (curAnimationIndex == AnimationType::Name && ableToTransition())
@@ -103,54 +109,97 @@ void handleRefresh()
     refreshTick = false;
 
     if (curAnimation->isComplete())
-      initializeNewAnimation();
+      initializeNextAnimation();
 
     TickResult result = curAnimation->handleTick(Tubes);
 
     if (result.CathodeUpdate)
+    {
       nixieDisplay(Tubes);
+    }
+
     if (result.BrightnessUpdate)
+    {
       nixieBrightness(Tubes);
-    // if (refreshTick)
-    //   log_w("Refresh took too long");
+    }
+
+    if (refreshTick)
+    {
+      log_w("Refresh took too long");
+    }
   }
 }
 
-void updateBrightnessAndSpeed()
+void displaySettingsTask(void *pvParameters)
 {
-  if (millis() - brightnessLastUpdateMillis > brightnessDelayMs)
+  while (1)
   {
-    log_d("Updating brightness and animation speed");
+// optional light sensor
+#ifndef USE_DS3231_RTC
+    if (millis() - lightSensorLastUpdateMillis > lightSensorIntervalMs)
+    {
+      uint16_t reading = analogRead(LIGHT_SENSOR_PIN);
 
-    int delaySecs, hour, minute, second;
+      if (reading < lightSensorThreshold && !isNightMode)
+      {
+        log_i("Light sensor reading: %d, setting to night mode", reading);
+        brightness = nightBrightness;
+        speedFactor = animationNightSpeedFactor;
+        curAnimation->setBrightness(brightness);
+        curAnimation->setSpeed(speedFactor);
+      }
+      else if (reading >= lightSensorThreshold && isNightMode)
+      {
+        log_i("Light sensor reading: %d, setting to day mode", reading);
+        brightness = dayBrightness;
+        speedFactor = animationDaySpeedFactor;
+        curAnimation->setBrightness(brightness);
+        curAnimation->setSpeed(speedFactor);
+      }
 
-    rtcGetTime(hour, minute, second);
+      lightSensorLastUpdateMillis = millis();
+    }
+#endif
 
-    int curMins = hour * 60 + minute;
-    int minsToDay = (dayTransitionTime.tm_hour * 60 + dayTransitionTime.tm_min - curMins + 1440) % 1440;
-    int minsToNight = (nightTransitionTime.tm_hour * 60 + nightTransitionTime.tm_min - curMins + 1440) % 1440;
+    if (isNtpSynced && millis() - brightnessLastUpdateMillis > brightnessUpdateIntervalMs)
+    {
+      log_d("Updating brightness and animation speed");
 
-    // if minsToDay or minsToNight are 0, it means the transition time is the current time so we want the other value
-    if (minsToDay == 0)
-      minsToDay = 1440;
-    if (minsToNight == 0)
-      minsToNight = 1440;
+      int delaySecs, hour, minute, second;
 
-    log_i("Current time: %02d:%02d, mins to day: %d, mins to night: %d", hour, minute, minsToDay, minsToNight);
+      rtcGetTime(hour, minute, second);
 
-    isNight = minsToDay < minsToNight;
-    brightness = isNight ? nightBrightness : dayBrightness;
-    speedFactor = isNight ? animationNightSpeedFactor : animationDaySpeedFactor;
-    delaySecs = 60 * (isNight ? minsToDay : minsToNight);
+      int curMins = hour * 60 + minute;
+      int minsToDay = (dayTransitionTime.tm_hour * 60 + dayTransitionTime.tm_min - curMins + 1440) % 1440;
+      int minsToNight = (nightTransitionTime.tm_hour * 60 + nightTransitionTime.tm_min - curMins + 1440) % 1440;
 
-    String timeOfDay = isNight ? "night" : "day";
-    log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs / 60);
+      // if minsToDay or minsToNight are 0, it means the transition time is the current time so we want the other value
+      if (minsToDay == 0)
+        minsToDay = 1440;
+      if (minsToNight == 0)
+        minsToNight = 1440;
 
-    curAnimation->setBrightness(brightness);
+      log_i("Current time: %02d:%02d, mins to day: %d, mins to night: %d", hour, minute, minsToDay, minsToNight);
 
-    brightnessDelayMs = delaySecs * 1000;
-    brightnessLastUpdateMillis = millis();
+      isNightMode = minsToDay < minsToNight;
+      brightness = isNightMode ? nightBrightness : dayBrightness;
+      speedFactor = isNightMode ? animationNightSpeedFactor : animationDaySpeedFactor;
+      delaySecs = 60 * (isNightMode ? minsToDay : minsToNight);
+
+      String timeOfDay = isNightMode ? "night" : "day";
+      log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs / 60);
+
+      curAnimation->setBrightness(brightness);
+      curAnimation->setSpeed(speedFactor);
+
+      brightnessUpdateIntervalMs = delaySecs * 1000;
+      brightnessLastUpdateMillis = millis();
+    }
+
+    delay(10);
   }
+
+  log_e("DisplaySettingsTask ended unexpectedly");
 }
 
 void setup()
@@ -160,27 +209,24 @@ void setup()
   log_d("Starting setup");
 
   nixieSetup();
-  wifiInit = wifiSetup();
-  if (wifiInit)
-  {
-    otaSetup();
-    restSetup();
-    mDnsSetup();
-  }
   rtcSetup();
+  loadSettings();
+
+  wifiServices.setup(DEVICE_NAME);
+  wifiServices.createTask();
 
   refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
   timerAlarmWrite(refreshTimer, REFRESH_RATE_US, true);
   timerAlarmEnable(refreshTimer);
 
-  initializeAllAnimations();
-
-  loadSettings();
-
   // start first animation
+  instantiateAllAnimations();
   curAnimation = animations[AnimationType::Name];
   curAnimation->initialize(Tubes, brightness, speedFactor);
+
+  // task to update brightness and speed
+  xTaskCreate(displaySettingsTask, "DisplaySettingsTask", 8192, NULL, 10, NULL);
 
   log_i("Setup complete");
 }
@@ -188,19 +234,4 @@ void setup()
 void loop()
 {
   handleRefresh();
-  updateBrightnessAndSpeed();
-
-  if (wifiInit)
-  {
-    checkWifiStatus();
-    try
-    {
-      server.handleClient();
-    }
-    catch (const std::exception &e)
-    {
-      log_e("Server error: %s", e.what());
-    }
-    ArduinoOTA.handle();
-  }
 }

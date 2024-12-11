@@ -109,6 +109,7 @@ const char *indexHtml = R"====(
     <p><b>System Time</b></p>
     <span id="systemTime" class="label"></span>
     <span id="isNight" class="label"></span>
+    <span id="isNtpSynced" class="label"></span>
   </div>
   <br/>
   <div>

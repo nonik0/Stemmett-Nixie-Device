@@ -1,11 +1,14 @@
+#pragma once
+
 #include <WebServer.h>
 
 #include "index.html.h"
 #include "rtc.h"
 #include "settings.h"
 
-extern int brightnessDelayMs;
-extern int brightnessLastUpdateMillis;
+extern unsigned long brightnessLastUpdateMillis;
+
+extern unsigned long brightnessUpdateIntervalMs;
 
 WebServer server(80);
 
@@ -42,7 +45,8 @@ void restGetState()
     secondStr = "0" + secondStr;
   response += "\"systemTime\": \"" + String(hourStr) + ":" + String(minuteStr) +
               ":" + String(secondStr) + "\",";
-  response += "\"isNight\": " + String(isNight ? "true" : "false") + ",";
+  response += "\"isNight\": " + String(isNightMode ? "true" : "false") + ",";
+  response += "\"ntpSynced\": \"" + String(isNtpSynced ? "true" : "false") + ",";
 
   response += "\"animationsDay\": [";
   for (int i = 1; i < NUM_ANIMATIONS; i++)
@@ -171,13 +175,14 @@ void restSetBrightness(int *brightness, String name)
   }
 
   *brightness = (255.0 - 2.55 * (100 - brightnessPct));
+  
   server.send(200, "text/plain",
               name + " brightness set to " + String(brightnessPct) + "%");
   log_i("%s brightness set to %d%%", name.c_str(), brightnessPct);
   saveSettings();
 
   // update the brightness immediately
-  brightnessDelayMs = 0;
+  brightnessUpdateIntervalMs = 0;
   brightnessLastUpdateMillis = 0;
 }
 
@@ -215,7 +220,7 @@ void restSetSpeedFactor(float *speedFactor, String name) {
   saveSettings();
 
   // update the speed immediately
-  brightnessDelayMs = 0;
+  brightnessUpdateIntervalMs = 0;
   brightnessLastUpdateMillis = 0;
 }
 
@@ -245,7 +250,7 @@ void restSetTransitionTime(tm *transitionTime, String name)
   saveSettings();
 
   // update the brightness immediately
-  brightnessDelayMs = 0;
+  brightnessUpdateIntervalMs = 0;
   brightnessLastUpdateMillis = 0;
 }
 

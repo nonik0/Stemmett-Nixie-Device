@@ -1,11 +1,13 @@
 #pragma once
 
+#ifdef USE_PREFERENCES
 #include <Preferences.h>
+Preferences preferences;
+#endif
 
 #include "Animation/animation.h"
 
 bool preferencesInitialized = false;
-Preferences preferences;
 
 // animation settings
 bool animationsEnabledDay[NUM_ANIMATIONS];
@@ -21,22 +23,29 @@ struct tm nightTransitionTime;
 int nightBrightness;
 
 // based off current time
-bool isNight;
+bool isNightMode;
+
+// TODO: integrate?
+uint16_t lightSensorThreshold = 512;
 
 void initSettings()
 {
+ 
+#ifdef USE_PREFERENCES
   if (!preferencesInitialized)
   {
     preferences.begin("stemmett", false);
     preferencesInitialized = true;
     log_i("Initialized preferences");
   }
+#endif
 }
 
 void loadSettings()
 {
   log_d("Loading settings");
 
+#ifdef USE_PREFERENCES
   initSettings();
 
   // use default settings until settings are modified by user
@@ -65,7 +74,9 @@ void loadSettings()
                          sizeof(nightTransitionTime));
     nightBrightness = preferences.getUChar("nb", 255);
   }
-  else {
+  else
+  {
+#endif
     // default settings
     log_d("Using default settings");
 
@@ -90,13 +101,16 @@ void loadSettings()
     dayBrightness = 255;
     nightTransitionTime = {19, 0, 0, 0, 0, 0, 0, 0, 0};
     nightBrightness = 32;
+#ifdef USE_PREFERENCES
   }
+#endif
 
   log_i("Loaded settings");
 }
 
 void saveSettings()
 {
+#ifdef USE_PREFERENCES
   log_d("Saving settings");
 
   initSettings();
@@ -125,4 +139,7 @@ void saveSettings()
   preferences.putUChar("nb", nightBrightness);
 
   log_i("Saved settings");
+#else
+  log_w("Preferences not enabled, settings not saved");
+#endif
 }
