@@ -21,14 +21,16 @@ WifiServices wifiServices;
 volatile int brightness = 150;
 volatile float speedFactor = 1;
 
-// timers for brightness and light sensor
-unsigned long brightnessLastUpdateMillis = 0;
-unsigned long brightnessUpdateIntervalMs = 0;
+// timers for day/night transition
+unsigned long dayNightTransitionLastUpdateMillis = 0;
+unsigned long dayNightTranstionUpdateInteralMs = 0;
 
+// light sensor variables
 const unsigned long LightSensorReadIntervalMs = 1000;
 const unsigned long LightSensorMinModeChangeIntervalMs = 10 * 1000;
 const int LightSensorReadings = 20;
 uint16_t lightSensorReadings[LightSensorReadings];
+uint16_t lightSensorAverageReading = lightSensorThreshold;
 unsigned long lightSensorLastReadMillis = 0;
 unsigned long lightSensorLastModeChangeMillis = 0;
 
@@ -54,7 +56,8 @@ bool ableToTransition()
 
 bool isEnabled(int animationIndex)
 {
-  if (animationIndex < 0 || animationIndex >= NUM_ANIMATIONS) {
+  if (animationIndex < 0 || animationIndex >= NUM_ANIMATIONS)
+  {
     log_e("Invalid animation index: %d", animationIndex);
     return false;
   }
@@ -97,7 +100,8 @@ void initializeNextAnimation()
       {
         newAnimationIndex = random(1, NUM_ANIMATIONS);
       }
-      else {
+      else
+      {
         log_e("Invalid transition behavior: %d", transitionBehavior);
         transitionBehavior = TransitionBehavior::Sequential;
         return;
@@ -105,7 +109,7 @@ void initializeNextAnimation()
 
     } while (!isEnabled(newAnimationIndex) || newAnimationIndex == AnimationType::Name);
 
-    log_i("Switching to animation %d", newAnimationIndex);
+    log_d("Switching to animation %d", newAnimationIndex);
   }
   else
   {
@@ -121,7 +125,7 @@ void initializeNextAnimation()
 
 void handleRefresh()
 {
-if (transitionBehavior != TransitionBehavior::Sequential && transitionBehavior != TransitionBehavior::Random)
+  if (transitionBehavior != TransitionBehavior::Sequential && transitionBehavior != TransitionBehavior::Random)
   {
     log_e("Transition behavior: %d is invalid", transitionBehavior);
     delay(10000);
@@ -167,36 +171,34 @@ void displaySettingsTask(void *pvParameters)
       }
       lightSensorReadings[0] = curReading;
 
+      // calculate average reading
+      uint16_t sum = 0;
+      for (int i = 0; i < LightSensorReadings; i++)
+      {
+        sum += lightSensorReadings[i];
+      }
+      lightSensorAverageReading = sum / LightSensorReadings;
+
       // check if enough time has passed since last mode change before changing again
       if (millis() - lightSensorLastModeChangeMillis > LightSensorMinModeChangeIntervalMs)
       {
-        // calculate average reading
-        uint16_t averageReading = 0;
-        for (int i = 0; i < LightSensorReadings; i++)
-        {
-          averageReading += lightSensorReadings[i];
-        }
-        averageReading = averageReading / LightSensorReadings;
 
-        if (averageReading < lightSensorThreshold && !isNightMode)
+        if (lightSensorAverageReading < lightSensorThreshold && !isNightMode)
         {
-          log_i("Light sensor reading: %d, setting to night mode", averageReading);
+          log_i("Light sensor reading less than threshold: %d < %d, setting to night mode", lightSensorAverageReading, lightSensorThreshold);
           isNightMode = true;
           brightness = nightBrightness;
           speedFactor = animationNightSpeedFactor;
           lightSensorLastModeChangeMillis = millis();
-          //curAnimation->setBrightness(brightness);
-          // curAnimation->setSpeed(speedFactor);
         }
-        else if (averageReading >= lightSensorThreshold && isNightMode)
+        // don't go day mode ever at night
+        else if (!isNight && lightSensorAverageReading >= lightSensorThreshold && isNightMode) 
         {
-          log_i("Light sensor reading: %d, setting to day mode", averageReading);
+          log_i("Light sensor reading greater than threshold: %d > %d, setting to day mode", lightSensorAverageReading, lightSensorThreshold);
           isNightMode = false;
           brightness = dayBrightness;
           speedFactor = animationDaySpeedFactor;
           lightSensorLastModeChangeMillis = millis();
-          //curAnimation->setBrightness(brightness);
-          // curAnimation->setSpeed(speedFactor);
         }
       }
 
@@ -204,9 +206,9 @@ void displaySettingsTask(void *pvParameters)
     }
 #endif
 
-    if (isNtpSynced && millis() - brightnessLastUpdateMillis > brightnessUpdateIntervalMs)
+    if (isNtpSynced && millis() - dayNightTransitionLastUpdateMillis > dayNightTranstionUpdateInteralMs)
     {
-      log_d("Updating brightness and animation speed");
+      log_d("Updating brightness and speed");
 
       int delaySecs, hour, minute, second;
 
@@ -218,13 +220,20 @@ void displaySettingsTask(void *pvParameters)
 
       // if minsToDay or minsToNight are 0, it means the transition time is the current time so we want the other value
       if (minsToDay == 0)
+      {
         minsToDay = 1440;
+      }
       if (minsToNight == 0)
+      {
         minsToNight = 1440;
+      }
 
       log_i("Current time: %02d:%02d, mins to day: %d, mins to night: %d", hour, minute, minsToDay, minsToNight);
 
-      isNightMode = minsToDay < minsToNight;
+      isNight = minsToDay < minsToNight;
+
+      // when we transition to day we check light sensor before going to day mode
+      isNightMode = isNight ? true : lightSensorAverageReading > lightSensorThreshold; 
       brightness = isNightMode ? nightBrightness : dayBrightness;
       speedFactor = isNightMode ? animationNightSpeedFactor : animationDaySpeedFactor;
       delaySecs = 60 * (isNightMode ? minsToDay : minsToNight);
@@ -232,11 +241,8 @@ void displaySettingsTask(void *pvParameters)
       String timeOfDay = isNightMode ? "night" : "day";
       log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs / 60);
 
-      //curAnimation->setBrightness(brightness);
-      // curAnimation->setSpeed(speedFactor);
-
-      brightnessUpdateIntervalMs = delaySecs * 1000;
-      brightnessLastUpdateMillis = millis();
+      dayNightTranstionUpdateInteralMs = delaySecs * 1000;
+      dayNightTransitionLastUpdateMillis = millis();
     }
 
     delay(10);

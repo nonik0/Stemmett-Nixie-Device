@@ -16,8 +16,16 @@ RTC_DS3231 ds3231Rtc;
 bool ds3231RtcInit = false;
 #endif
 
+bool rtcSyncTime();
+
 void rtcGetTime(int &hour, int &minute, int &second)
 {
+  if (!isNtpSynced)
+  {
+    log_d("NTP not synced and Wifi connected, attempting to sync again");
+    rtcSyncTime();
+  }
+
 #ifdef USE_DS3231_RTC
   if (ds3231RtcInit)
   {

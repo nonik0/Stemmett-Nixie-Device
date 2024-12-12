@@ -6,9 +6,9 @@
 #include "rtc.h"
 #include "settings.h"
 
-extern unsigned long brightnessLastUpdateMillis;
-
-extern unsigned long brightnessUpdateIntervalMs;
+extern unsigned long dayNightTransitionLastUpdateMillis;
+extern unsigned long dayNightTranstionUpdateInteralMs;
+extern uint16_t lightSensorAverageReading;
 
 WebServer server(80);
 
@@ -47,6 +47,9 @@ void restGetState()
               ":" + String(secondStr) + "\",";
   response += "\"isNight\": " + String(isNightMode ? "true" : "false") + ",";
   response += "\"isNtpSynced\":" + String(isNtpSynced ? "true" : "false") + ",";
+
+  response += "\"lightSensorReading\": " + String(lightSensorAverageReading) + ",";
+  response += "\"lightSensorThreshold\": " + String(lightSensorThreshold) + ",";
 
   response += "\"animationsDay\": [";
   for (int i = 1; i < NUM_ANIMATIONS; i++)
@@ -100,6 +103,45 @@ void restGetState()
   response += "}";
   server.send(200, "application/json", response);
   log_i("Sent device state");
+}
+
+void restGetLightSensorReading()
+{
+  server.send(200, "text/plain", String(lightSensorAverageReading));
+}
+
+void restSetLightSensorThreshold() {
+  if (!server.hasArg("value"))
+  {
+    server.send(400, "text/plain", "No threshold value provided");
+    log_w("No threshold value provided");
+    return;
+  }
+
+  int threshold = -1;
+  try
+  {
+    threshold = server.arg("value").toInt();
+  }
+  catch (const std::exception &e)
+  {
+    server.send(400, "text/plain", "Invalid threshold value" + threshold);
+    log_w("Invalid threshold value: %s", e.what());
+    return;
+  }
+ 
+  if (threshold < 0 || threshold > 4096)
+  {
+    server.send(400, "text/plain", "Threshold out of range:" + threshold);
+    log_w("Threshold out of range: %d", threshold);
+    return;
+  }
+
+  lightSensorThreshold = threshold;
+  server.send(200, "text/plain",
+              "Light sensor threshold set to " + String(threshold));
+  log_i("Light sensor threshold set to %d", threshold);
+  saveSettings();
 }
 
 void restRestart()
@@ -184,8 +226,8 @@ void restSetBrightness(int *brightness, String name)
   saveSettings();
 
   // update the brightness immediately
-  brightnessUpdateIntervalMs = 0;
-  brightnessLastUpdateMillis = 0;
+  dayNightTranstionUpdateInteralMs = 0;
+  dayNightTransitionLastUpdateMillis = 0;
 }
 
 void restSetSpeedFactor(float *speedFactor, String name) {
@@ -222,8 +264,8 @@ void restSetSpeedFactor(float *speedFactor, String name) {
   saveSettings();
 
   // update the speed immediately
-  brightnessUpdateIntervalMs = 0;
-  brightnessLastUpdateMillis = 0;
+  dayNightTranstionUpdateInteralMs = 0;
+  dayNightTransitionLastUpdateMillis = 0;
 }
 
 void restSetTransitionTime(tm *transitionTime, String name)
@@ -252,20 +294,20 @@ void restSetTransitionTime(tm *transitionTime, String name)
   saveSettings();
 
   // update the brightness immediately
-  brightnessUpdateIntervalMs = 0;
-  brightnessLastUpdateMillis = 0;
+  dayNightTranstionUpdateInteralMs = 0;
+  dayNightTransitionLastUpdateMillis = 0;
 }
 
 void restSetTransitionType()
 {
-  if (!server.hasArg("type"))
+  if (!server.hasArg("value"))
   {
     server.send(400, "text/plain", "No transition type provided");
     log_w("No transition type provided");
     return;
   }
 
-  String transitionStr = server.arg("type");
+  String transitionStr = server.arg("value");
   transitionStr.toLowerCase();
   if (transitionStr == "sequential")
   {
@@ -294,9 +336,10 @@ void restSetup()
   server.on("/", HTTP_GET, restIndex);
   server.on("/index.html", HTTP_GET, restIndex);
   server.on("/getState", HTTP_GET, restGetState);
+  server.on("/getLightSensorReading", HTTP_GET, restGetLightSensorReading);
   server.on("/restart", HTTP_GET, restRestart);
   server.on("/syncTime", HTTP_GET, restSyncTime);
-
+  server.on("/setLightSensorThreshold", HTTP_GET, restSetLightSensorThreshold);
   server.on("/setTransitionType", HTTP_GET, restSetTransitionType);
 
   server.on("/enableAnimationDay", HTTP_GET,

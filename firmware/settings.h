@@ -21,12 +21,13 @@ struct tm dayTransitionTime;
 int dayBrightness;
 struct tm nightTransitionTime;
 int nightBrightness;
-
-// based off current time
-bool isNightMode;
-
-// TODO: integrate?
 uint16_t lightSensorThreshold = 512;
+
+// based only off current time
+bool isNight;
+
+// based off light sensor and  current time (always night mode at night, sometimes night mode at day when light sensor is low)
+bool isNightMode;
 
 void initSettings()
 {

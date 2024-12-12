@@ -108,7 +108,7 @@ void WifiServices::checkWifiStatus()
       {
         _disconnectCount++;
 
-        log_w("Wifi disconnecting, attempting to reconnect");
+        log_w("Wifi disconnected, attempting to reconnect");
         WiFi.disconnect();
         WiFi.reconnect();
         log_w("Reconnected to WiFi");

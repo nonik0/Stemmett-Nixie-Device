@@ -106,10 +106,15 @@ const char *indexHtml = R"====(
     </div>
   </div>
   <div>
-    <p><b>System Time</b></p>
+    <p><b>System Time:</b></p>
     <span id="systemTime" class="label"></span>
     <span id="isNight" class="label"></span></br>
     NTP sync: <span id="isNtpSynced" class="label"></span>
+  </div>
+  <div>
+    <p><b>Light Sensor:</b></p>
+    Reading: <span id="lightSensorReading" class="label"></span></br>
+    Threshold: <input id="lightSensorThreshold" type="number" min="0" max="4096" onchange="setLightSensorThreshold(this.value)">
   </div>
   <br/>
   <div>
@@ -194,6 +199,8 @@ function initializePage(deviceState) {
     document.getElementById('systemTime').innerText = deviceState.systemTime;
     document.getElementById('isNtpSynced').innerText = deviceState.isNtpSynced;
     document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
+    document.getElementById('lightSensorReading').innerText = deviceState.lightSensorReading;
+    document.getElementById('lightSensorThreshold').value = deviceState.lightSensorThreshold;
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
     document.getElementById('dayMaxSpeed').value = deviceState.dayMaxSpeed;
     document.getElementById('dayTransitionTime').value = deviceState.dayTransitionTime;
@@ -210,6 +217,7 @@ function initializePage(deviceState) {
     systemTimeAtPageLoad.setSeconds(seconds);
 
     updateSystemTime();
+    updateLightSensorReading();
 }
 
 function updateSystemTime() {
@@ -223,6 +231,17 @@ function updateSystemTime() {
 
   document.getElementById('systemTime').innerText = `${h}:${m}:${s}`;
   setTimeout(updateSystemTime, 1000);
+}
+
+// get plain text light sensor reading
+function updateLightSensorReading() {
+  fetch('/getLightSensorReading')
+    .then(response => response.text())
+    .then(reading => {
+      document.getElementById('lightSensorReading').innerText = reading;
+      setTimeout(updateLightSensorReading, 1000);
+    })
+    .catch(error => console.error('Error fetching light sensor reading:', error));
 }
 
 function toggleAnimation(animationName, isEnabled, isNight) {
@@ -247,6 +266,10 @@ function setBrightness(timeOfDay, brightness) {
   fetch(`/set${timeOfDay}Brightness?value=${brightness}`);
 }
 
+function setLightSensorThreshold(threshold) {
+  fetch(`/setLightSensorThreshold?value=${threshold}`);
+}
+
 function setMaxSpeed(timeOfDay, speed) {
   fetch(`/set${timeOfDay}MaxSpeed?value=${speed}`);
 }
@@ -256,7 +279,7 @@ function setTransitionTime(timeOfDay, time) {
 }
 
 function setTransitionType(transitionType) {
-  fetch(`/setTransitionType?type=${transitionType}`);
+  fetch(`/setTransitionType?value=${transitionType}`);
 }
 
 </script>
