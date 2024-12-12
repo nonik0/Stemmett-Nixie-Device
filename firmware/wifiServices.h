@@ -53,16 +53,7 @@ void WifiServices::setup(const char *hostname)
     p++;
   }
 
-  if (!wifiSetup())
-  {
-    return;
-  }
-
-  mDnsSetup();
-  otaSetup();
-  restSetup();
-
-  log_i("WiFi services setup complete");
+  log_i("WiFi services initial setup complete");
 }
 
 void WifiServices::createTask()
@@ -81,6 +72,20 @@ void WifiServices::createTask()
 
 void WifiServices::task()
 {
+  log_i("WifiServicesTask setup started");
+  if (!wifiSetup())
+  {
+    log_e("Wifi setup failed, will retry at next reboot");
+    vTaskDelete(NULL);
+    return;
+  }
+
+  mDnsSetup();
+  otaSetup();
+  restSetup();
+
+  log_i("WifiServicesTask setup complete");
+
   while (1)
   {
     checkWifiStatus();
@@ -129,7 +134,7 @@ bool WifiServices::wifiSetup()
   // try to connect with wifi manager
   if (_wifiManager.autoConnect(DEVICE_NAME))
   {
-    log_i("Wifi connected to %s, IP address: %s", _wifiManager.getDefaultAPName(), WiFi.localIP().toString().c_str());
+    log_i("Wifi connected to %s, IP address: %s", _wifiManager.getWiFiSSID().c_str(), WiFi.localIP().toString().c_str());
     return true;
   }
 

@@ -52,7 +52,7 @@ void loadSettings()
   bool isCustom = preferences.getBool("custom", false);
   if (isCustom)
   {
-    log_d("Using custom settings");
+    log_i("Using custom settings");
 
     for (int i = 1; i < NUM_ANIMATIONS; i++)
     {
@@ -78,7 +78,7 @@ void loadSettings()
   {
 #endif
     // default settings
-    log_d("Using default settings");
+    log_i("Using default settings");
 
     for (int i = 1; i < NUM_ANIMATIONS; i++)
     {
@@ -104,8 +104,6 @@ void loadSettings()
 #ifdef USE_PREFERENCES
   }
 #endif
-
-  log_i("Loaded settings");
 }
 
 void saveSettings()

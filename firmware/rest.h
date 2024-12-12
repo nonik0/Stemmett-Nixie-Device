@@ -46,7 +46,7 @@ void restGetState()
   response += "\"systemTime\": \"" + String(hourStr) + ":" + String(minuteStr) +
               ":" + String(secondStr) + "\",";
   response += "\"isNight\": " + String(isNightMode ? "true" : "false") + ",";
-  response += "\"ntpSynced\": \"" + String(isNtpSynced ? "true" : "false") + ",";
+  response += "\"isNtpSynced\":" + String(isNtpSynced ? "true" : "false") + ",";
 
   response += "\"animationsDay\": [";
   for (int i = 1; i < NUM_ANIMATIONS; i++)

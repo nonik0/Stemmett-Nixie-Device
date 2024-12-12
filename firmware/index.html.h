@@ -108,8 +108,8 @@ const char *indexHtml = R"====(
   <div>
     <p><b>System Time</b></p>
     <span id="systemTime" class="label"></span>
-    <span id="isNight" class="label"></span>
-    <span id="isNtpSynced" class="label"></span>
+    <span id="isNight" class="label"></span></br>
+    NTP sync: <span id="isNtpSynced" class="label"></span>
   </div>
   <br/>
   <div>
@@ -192,6 +192,7 @@ function initializePage(deviceState) {
 
     document.getElementById('transitionType').value = deviceState.transitionBehavior;
     document.getElementById('systemTime').innerText = deviceState.systemTime;
+    document.getElementById('isNtpSynced').innerText = deviceState.isNtpSynced;
     document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
     document.getElementById('dayMaxSpeed').value = deviceState.dayMaxSpeed;

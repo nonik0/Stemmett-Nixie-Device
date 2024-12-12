@@ -6,7 +6,7 @@ void RandomScanAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, f
   log_d("RandomScanAnimation::initialize");
   Animation::setDuration(10000);
   Animation::initialize(tubes, maxBrightness, speedFactor);
-  _activeTube = -1;
+  _activeTube = random(NUM_TUBES);
   _cathodeDelay = 0;
   for (int i = 0; i < NUM_TUBES; i++) {
     _tubeProgress[i] = 0;

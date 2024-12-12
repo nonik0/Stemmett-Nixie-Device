@@ -24,34 +24,42 @@ volatile float speedFactor = 1;
 // timers for brightness and light sensor
 unsigned long brightnessLastUpdateMillis = 0;
 unsigned long brightnessUpdateIntervalMs = 0;
-unsigned long lightSensorLastUpdateMillis = 0;
-const unsigned long lightSensorIntervalMs = 1000;
+
+const unsigned long LightSensorReadIntervalMs = 1000;
+const unsigned long LightSensorMinModeChangeIntervalMs = 10 * 1000;
+const int LightSensorReadings = 20;
+uint16_t lightSensorReadings[LightSensorReadings];
+unsigned long lightSensorLastReadMillis = 0;
+unsigned long lightSensorLastModeChangeMillis = 0;
 
 void IRAM_ATTR refreshTimerCallback()
 {
   refreshTick = true;
 }
 
-bool ableToTransition(int animationIndex = -1)
+bool ableToTransition()
 {
-  if (animationIndex < 0)
+  // check if any animations are enabled other than the name animation
+  for (int i = 1; i < NUM_ANIMATIONS; i++)
   {
-    // check if any animations are enabled other than the name animation
-    for (int i = 1; i < NUM_ANIMATIONS; i++)
-    {
-      if (!isNightMode && animationsEnabledDay[i])
-        return true;
-      else if (isNightMode && animationsEnabledNight[i])
-        return true;
-    }
+    if (!isNightMode && animationsEnabledDay[i])
+      return true;
+    else if (isNightMode && animationsEnabledNight[i])
+      return true;
+  }
 
-    log_d("No animations enabled, not able to transition");
+  log_d("No animations enabled for current mode, not able to transition");
+  return false;
+}
+
+bool isEnabled(int animationIndex)
+{
+  if (animationIndex < 0 || animationIndex >= NUM_ANIMATIONS) {
+    log_e("Invalid animation index: %d", animationIndex);
     return false;
   }
-  else
-  {
-    return isNightMode ? animationsEnabledNight[animationIndex] : animationsEnabledDay[animationIndex];
-  }
+
+  return isNightMode ? animationsEnabledNight[animationIndex] : animationsEnabledDay[animationIndex];
 }
 
 void instantiateAllAnimations()
@@ -82,17 +90,26 @@ void initializeNextAnimation()
       // both exclude name animation at index 0
       if (transitionBehavior == TransitionBehavior::Sequential)
       {
-        curAnimationIndex = (curAnimationIndex + 1) % NUM_ANIMATIONS;
+        curAnimationIndexSeq = (curAnimationIndexSeq + 1) % NUM_ANIMATIONS;
+        newAnimationIndex = curAnimationIndexSeq;
       }
       else if (transitionBehavior == TransitionBehavior::Random)
       {
         newAnimationIndex = random(1, NUM_ANIMATIONS);
       }
-    } while (!ableToTransition(newAnimationIndex) || newAnimationIndex == curAnimationIndex || newAnimationIndex == AnimationType::Name);
-    log_d("Switching to animation %d", newAnimationIndex);
+      else {
+        log_e("Invalid transition behavior: %d", transitionBehavior);
+        transitionBehavior = TransitionBehavior::Sequential;
+        return;
+      }
+
+    } while (!isEnabled(newAnimationIndex) || newAnimationIndex == AnimationType::Name);
+
+    log_i("Switching to animation %d", newAnimationIndex);
   }
   else
   {
+    log_d("Switching to name animation");
     newAnimationIndex = AnimationType::Name;
   }
 
@@ -104,12 +121,21 @@ void initializeNextAnimation()
 
 void handleRefresh()
 {
+if (transitionBehavior != TransitionBehavior::Sequential && transitionBehavior != TransitionBehavior::Random)
+  {
+    log_e("Transition behavior: %d is invalid", transitionBehavior);
+    delay(10000);
+    return;
+  }
+
   if (refreshTick)
   {
     refreshTick = false;
 
     if (curAnimation->isComplete())
+    {
       initializeNextAnimation();
+    }
 
     TickResult result = curAnimation->handleTick(Tubes);
 
@@ -122,11 +148,6 @@ void handleRefresh()
     {
       nixieBrightness(Tubes);
     }
-
-    if (refreshTick)
-    {
-      log_w("Refresh took too long");
-    }
   }
 }
 
@@ -136,28 +157,50 @@ void displaySettingsTask(void *pvParameters)
   {
 // optional light sensor
 #ifndef USE_DS3231_RTC
-    if (millis() - lightSensorLastUpdateMillis > lightSensorIntervalMs)
+    if (millis() - lightSensorLastReadMillis > LightSensorReadIntervalMs)
     {
-      uint16_t reading = analogRead(LIGHT_SENSOR_PIN);
-
-      if (reading < lightSensorThreshold && !isNightMode)
+      // read and shift in new reading
+      uint16_t curReading = analogRead(LIGHT_SENSOR_PIN);
+      for (int i = LightSensorReadings - 1; i > 0; i--)
       {
-        log_i("Light sensor reading: %d, setting to night mode", reading);
-        brightness = nightBrightness;
-        speedFactor = animationNightSpeedFactor;
-        curAnimation->setBrightness(brightness);
-        curAnimation->setSpeed(speedFactor);
+        lightSensorReadings[i] = lightSensorReadings[i - 1];
       }
-      else if (reading >= lightSensorThreshold && isNightMode)
+      lightSensorReadings[0] = curReading;
+
+      // check if enough time has passed since last mode change before changing again
+      if (millis() - lightSensorLastModeChangeMillis > LightSensorMinModeChangeIntervalMs)
       {
-        log_i("Light sensor reading: %d, setting to day mode", reading);
-        brightness = dayBrightness;
-        speedFactor = animationDaySpeedFactor;
-        curAnimation->setBrightness(brightness);
-        curAnimation->setSpeed(speedFactor);
+        // calculate average reading
+        uint16_t averageReading = 0;
+        for (int i = 0; i < LightSensorReadings; i++)
+        {
+          averageReading += lightSensorReadings[i];
+        }
+        averageReading = averageReading / LightSensorReadings;
+
+        if (averageReading < lightSensorThreshold && !isNightMode)
+        {
+          log_i("Light sensor reading: %d, setting to night mode", averageReading);
+          isNightMode = true;
+          brightness = nightBrightness;
+          speedFactor = animationNightSpeedFactor;
+          lightSensorLastModeChangeMillis = millis();
+          //curAnimation->setBrightness(brightness);
+          // curAnimation->setSpeed(speedFactor);
+        }
+        else if (averageReading >= lightSensorThreshold && isNightMode)
+        {
+          log_i("Light sensor reading: %d, setting to day mode", averageReading);
+          isNightMode = false;
+          brightness = dayBrightness;
+          speedFactor = animationDaySpeedFactor;
+          lightSensorLastModeChangeMillis = millis();
+          //curAnimation->setBrightness(brightness);
+          // curAnimation->setSpeed(speedFactor);
+        }
       }
 
-      lightSensorLastUpdateMillis = millis();
+      lightSensorLastReadMillis = millis();
     }
 #endif
 
@@ -189,8 +232,8 @@ void displaySettingsTask(void *pvParameters)
       String timeOfDay = isNightMode ? "night" : "day";
       log_i("Setting brightness to %d and speed factor to %.2f (%s), next check in %dm", brightness, speedFactor, timeOfDay, delaySecs / 60);
 
-      curAnimation->setBrightness(brightness);
-      curAnimation->setSpeed(speedFactor);
+      //curAnimation->setBrightness(brightness);
+      // curAnimation->setSpeed(speedFactor);
 
       brightnessUpdateIntervalMs = delaySecs * 1000;
       brightnessLastUpdateMillis = millis();
@@ -208,12 +251,16 @@ void setup()
   delay(5000);
   log_d("Starting setup");
 
-  nixieSetup();
-  rtcSetup();
-  loadSettings();
-
+  // fully async including wifi setup
   wifiServices.setup(DEVICE_NAME);
   wifiServices.createTask();
+
+  loadSettings();
+  nixieSetup();
+  rtcSetup();
+
+  // task to update brightness and speed
+  xTaskCreate(displaySettingsTask, "DisplaySettingsTask", 8192, NULL, 10, NULL);
 
   refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
   timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
@@ -224,9 +271,6 @@ void setup()
   instantiateAllAnimations();
   curAnimation = animations[AnimationType::Name];
   curAnimation->initialize(Tubes, brightness, speedFactor);
-
-  // task to update brightness and speed
-  xTaskCreate(displaySettingsTask, "DisplaySettingsTask", 8192, NULL, 10, NULL);
 
   log_i("Setup complete");
 }
