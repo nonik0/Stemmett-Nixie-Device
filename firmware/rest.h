@@ -61,6 +61,7 @@ void restGetState()
 
   int dayBrightnessPct = dayBrightness / 2.55;
   response += "\"dayBrightness\": " + String(dayBrightnessPct) + ",";
+  response += "\"dayMaxSpeed\": " + String(animationDaySpeedFactor * 100) + ",";
 
   // Format dayTransitionTime as HH:mm
   String dayHour = String(dayTransitionTime.tm_hour);
@@ -84,6 +85,7 @@ void restGetState()
 
   int nightBrightnessPct = nightBrightness / 2.55;
   response += "\"nightBrightness\": " + String(nightBrightnessPct) + ",";
+  response += "\"nightMaxSpeed\": " + String(animationNightSpeedFactor * 100) + ",";
 
   // Format nightTransitionTime as HH:mm
   String nightHour = String(nightTransitionTime.tm_hour);
