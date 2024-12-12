@@ -228,12 +228,14 @@ void displaySettingsTask(void *pvParameters)
         minsToNight = 1440;
       }
 
-      log_i("Current time: %02d:%02d, mins to day: %d, mins to night: %d", hour, minute, minsToDay, minsToNight);
 
       isNight = minsToDay < minsToNight;
+      log_i("Current time: %02d:%02d, %s, mins to day: %d, mins to night: %d", hour, minute, isNightMode ? "night" : "day", minsToDay, minsToNight);
 
       // when we transition to day we check light sensor before going to day mode
       isNightMode = isNight ? true : lightSensorAverageReading > lightSensorThreshold; 
+      log_i("Setting to %s mode", isNightMode ? "night" : "day");
+
       brightness = isNightMode ? nightBrightness : dayBrightness;
       speedFactor = isNightMode ? animationNightSpeedFactor : animationDaySpeedFactor;
       delaySecs = 60 * (isNightMode ? minsToDay : minsToNight);

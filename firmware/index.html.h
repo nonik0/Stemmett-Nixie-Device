@@ -111,6 +111,7 @@ const char *indexHtml = R"====(
     <span id="isNight" class="label"></span></br>
     NTP sync: <span id="isNtpSynced" class="label"></span>
   </div>
+  <br/>
   <div>
     <p><b>Light Sensor:</b></p>
     Reading: <span id="lightSensorReading" class="label"></span></br>
@@ -118,7 +119,7 @@ const char *indexHtml = R"====(
   </div>
   <br/>
   <div>
-    <p><b>Day Settings:</b></p>
+    <p><b>Day Mode Settings:</b></p>
     <div>
       Transition Time:
       <input id="dayTransitionTime" type="time" onchange="setTransitionTime('Day', this.value)">
@@ -138,7 +139,7 @@ const char *indexHtml = R"====(
   </div>
   <br/>
   <div>
-    <p><b>Night Settings:</b></p>
+    <p><b>Night Mode Settings:</b></p>
     <div>
       Transition Time:
       <input id="nightTransitionTime" type="time" onchange="setTransitionTime('Night', this.value)">
