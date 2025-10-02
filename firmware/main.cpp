@@ -270,10 +270,9 @@ void setup()
   // task to update brightness and speed
   xTaskCreate(displaySettingsTask, "DisplaySettingsTask", 8192, NULL, 10, NULL);
 
-  refreshTimer = timerBegin(0, 80, true); // 80Mhz / 80 = 1Mhz
-  timerAttachInterrupt(refreshTimer, &refreshTimerCallback, false);
-  timerAlarmWrite(refreshTimer, REFRESH_RATE_US, true);
-  timerAlarmEnable(refreshTimer);
+  refreshTimer = timerBegin(1000000); // 1Mhz (1,000,000 Hz)
+  timerAttachInterrupt(refreshTimer, &refreshTimerCallback);
+  timerAlarm(refreshTimer, REFRESH_RATE_US, true, 0);
 
   // start first animation
   instantiateAllAnimations();

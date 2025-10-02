@@ -1,10 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <pwmWrite.h>
 #include "tubeConfiguration.h"
 #include "tubes.h"
-
-Pwm pwm;
 
 void nixieSetup() {
   log_d("Setting up nixie tubes");
@@ -15,17 +12,20 @@ void nixieSetup() {
   for (int i = 0; i < NUM_TUBES; i++) {
     pinMode(Tubes[i].AnodePin, OUTPUT);
     digitalWrite(Tubes[i].AnodePin, LOW);
-    // pwm.write(Tubes[i].AnodePin, PWM_MIN, PWM_FREQUENCY);
   }
 
   SPI.begin();
 
-  // calculate PWM phase offset for each tube to smooth out power consumption
+  // setup PWM for each tube
   for (int i = 0; i < NUM_TUBES; i++) {
+    ledcAttach(Tubes[i].AnodePin, PWM_FREQUENCY, PWM_RESOLUTION);
+
+    // calculate PWM phase offset for each tube to smooth out power consumption
     int phaseDeg = (360 / NUM_TUBES) * i;
     Tubes[i].PwmPhase = (phaseDeg / 360.0) * (pow(2, PWM_RESOLUTION));
-    pwm.write(Tubes[i].AnodePin, 128, PWM_FREQUENCY, PWM_RESOLUTION,
-              Tubes[i].PwmPhase);
+
+    // Set initial brightness
+    ledcWrite(Tubes[i].AnodePin, 128);
   }
 
   log_d("Nixie tubes setup complete");
@@ -47,7 +47,6 @@ void nixieDisplay(Tube tubes[NUM_TUBES]) {
 
 void nixieBrightness(Tube tubes[NUM_TUBES]) {
   for (int i = 0; i < NUM_TUBES; i++) {
-    pwm.write(tubes[i].AnodePin, tubes[i].Brightness, PWM_FREQUENCY,
-              PWM_RESOLUTION, tubes[i].PwmPhase);
+    ledcWrite(tubes[i].AnodePin, tubes[i].Brightness);
   }
 }
