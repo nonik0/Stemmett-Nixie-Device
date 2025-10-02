@@ -8,11 +8,11 @@
 #define EN_PIN 7      // OE pin
 #define LATCH_PIN 34  // RCLK pin
 #define PWM_PIN_1 1   // PWM pin for tube 1 anode
-#define PWM_PIN_2 2   // PWM pin for tube  anode
-#define PWM_PIN_3 3   // PWM pin for tube  anode
-#define PWM_PIN_4 4   // PWM pin for tube  anode
-#define PWM_PIN_5 5   // PWM pin for tube  anode
-#define PWM_PIN_6 6   // PWM pin for tube  anode
+#define PWM_PIN_2 2   // PWM pin for tube 2 anode
+#define PWM_PIN_3 3   // PWM pin for tube 3 anode
+#define PWM_PIN_4 4   // PWM pin for tube 4 anode
+#define PWM_PIN_5 5   // PWM pin for tube 5 anode
+#define PWM_PIN_6 6   // PWM pin for tube 6 anode
 
 #define NUM_TUBES 6
 

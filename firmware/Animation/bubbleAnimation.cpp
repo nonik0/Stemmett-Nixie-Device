@@ -5,7 +5,7 @@
 void BubbleAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("BubbleAnimation::initialize");
   Animation::initialize(tubes, maxBrightness, speedFactor);
-  Animation::setDuration(55000);
+  Animation::setDuration(25000);
 
   _activePhaseDuration = random(10000,20000);
   _newBubbleCooldown = 0;

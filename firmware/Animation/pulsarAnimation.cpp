@@ -8,7 +8,7 @@ bool PulsarAnimation::isVisible(int index) {
 
 void PulsarAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("PulsarAnimation::initialize");
-  Animation::setDuration(30000);
+  Animation::setDuration(25000);
   Animation::initialize(tubes, maxBrightness, speedFactor);
 
   _finalEjection = false;

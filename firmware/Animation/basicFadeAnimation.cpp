@@ -71,7 +71,7 @@ void BasicFadeAnimation::setRandomFadePattern(int targetBrightness, int initialD
 void BasicFadeAnimation::initialize(Tube tubes[NUM_TUBES], int maxBrightness, float speedFactor) {
   log_d("BasicFadeAnimation::initialize");
   Animation::initialize(tubes, maxBrightness, speedFactor);
-  Animation::setDuration(30000);
+  Animation::setDuration(25000);
   _fadeProgression = FadeStart;
   setNextProgression();
 }
