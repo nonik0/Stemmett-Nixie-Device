@@ -127,6 +127,7 @@ bool WifiServices::wifiSetup()
 
   bool connected = false;
 
+#if defined(WIFI_MANAGER)
   _wifiManager.setConfigPortalTimeout(180);
   _wifiManager.setConnectTimeout(10);
   _wifiManager.setDarkMode(true);
@@ -137,6 +138,7 @@ bool WifiServices::wifiSetup()
     log_i("Wifi connected to %s, IP address: %s", _wifiManager.getWiFiSSID().c_str(), WiFi.localIP().toString().c_str());
     return true;
   }
+#endif
 
 #if defined(WIFI_SSID) && defined(WIFI_PASS)
   // hardcoded wifi 1
