@@ -50,3 +50,9 @@ void nixieBrightness(Tube tubes[NUM_TUBES]) {
     ledcWrite(tubes[i].AnodePin, tubes[i].Brightness);
   }
 }
+
+void nixieOff(Tube tubes[NUM_TUBES]) {
+  for (int i = 0; i < NUM_TUBES; i++) {
+    ledcWrite(tubes[i].AnodePin, 0);
+  }
+}

@@ -113,6 +113,15 @@ const char *indexHtml = R"====(
   </div>
   <br/>
   <div>
+    <p><b>Display:</b></p>
+    <label class="switch">
+      <input id="displayEnabled" type="checkbox" onchange="setDisplayState(this.checked)">
+      <span class="slider rounded"></span>
+    </label>
+    <span class="label">Enabled</span>
+  </div>
+  </br>
+  <div>
     <p><b>Light Sensor:</b></p>
     Reading: <span id="lightSensorReading" class="label"></span></br>
     Threshold: <input id="lightSensorThreshold" type="number" min="0" max="4096" onchange="setLightSensorThreshold(this.value)">
@@ -200,6 +209,7 @@ function initializePage(deviceState) {
     document.getElementById('systemTime').innerText = deviceState.systemTime;
     document.getElementById('isNtpSynced').innerText = deviceState.isNtpSynced;
     document.getElementById('isNight').innerText = deviceState.isNight ? 'Night' : 'Day';
+    document.getElementById('displayEnabled').checked = deviceState.displayEnabled;
     document.getElementById('lightSensorReading').innerText = deviceState.lightSensorReading;
     document.getElementById('lightSensorThreshold').value = deviceState.lightSensorThreshold;
     document.getElementById('dayBrightness').value = deviceState.dayBrightness;
@@ -265,6 +275,10 @@ function syncTime() {
 
 function setBrightness(timeOfDay, brightness) {
   fetch(`/set${timeOfDay}Brightness?value=${brightness}`);
+}
+
+function setDisplayState(state) {
+  fetch(`/setDisplayState?value=${state ? 1 : 0}`);
 }
 
 function setLightSensorThreshold(threshold) {

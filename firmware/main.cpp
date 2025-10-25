@@ -18,6 +18,7 @@ volatile bool refreshTick = false;
 WifiServices wifiServices;
 
 // modified by rest API and displaySettingsTask
+bool displayEnabled = true;
 volatile int brightness = 150;
 volatile float speedFactor = 1;
 
@@ -135,6 +136,11 @@ void handleRefresh()
   if (refreshTick)
   {
     refreshTick = false;
+
+    if (!displayEnabled) {
+      nixieOff(Tubes);
+      return;
+    }
 
     if (curAnimation->isComplete())
     {

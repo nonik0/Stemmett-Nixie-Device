@@ -6,6 +6,7 @@
 #include "rtc.h"
 #include "settings.h"
 
+extern bool displayEnabled;
 extern unsigned long dayNightTransitionLastUpdateMillis;
 extern unsigned long dayNightTranstionUpdateInteralMs;
 extern uint16_t lightSensorAverageReading;
@@ -48,6 +49,7 @@ void restGetState()
   response += "\"isNight\": " + String(isNightMode ? "true" : "false") + ",";
   response += "\"isNtpSynced\":" + String(isNtpSynced ? "true" : "false") + ",";
 
+  response += "\"displayEnabled\": " + String(displayEnabled) + ",";
   response += "\"lightSensorReading\": " + String(lightSensorAverageReading) + ",";
   response += "\"lightSensorThreshold\": " + String(lightSensorThreshold) + ",";
 
@@ -110,7 +112,8 @@ void restGetLightSensorReading()
   server.send(200, "text/plain", String(lightSensorAverageReading));
 }
 
-void restSetLightSensorThreshold() {
+void restSetLightSensorThreshold()
+{
   if (!server.hasArg("value"))
   {
     server.send(400, "text/plain", "No threshold value provided");
@@ -129,7 +132,7 @@ void restSetLightSensorThreshold() {
     log_w("Invalid threshold value: %s", e.what());
     return;
   }
- 
+
   if (threshold < 0 || threshold > 4096)
   {
     server.send(400, "text/plain", "Threshold out of range:" + threshold);
@@ -219,7 +222,7 @@ void restSetBrightness(int *brightness, String name)
   }
 
   *brightness = (255.0 - 2.55 * (100 - brightnessPct));
-  
+
   server.send(200, "text/plain",
               name + " brightness set to " + String(brightnessPct) + "%");
   log_i("%s brightness set to %d%%", name.c_str(), brightnessPct);
@@ -230,7 +233,47 @@ void restSetBrightness(int *brightness, String name)
   dayNightTransitionLastUpdateMillis = 0;
 }
 
-void restSetSpeedFactor(float *speedFactor, String name) {
+void restSetDisplayState()
+{
+  if (!server.hasArg("value"))
+  {
+    server.send(400, "text/plain", "No state value provided");
+    log_w("No state value provided");
+    return;
+  }
+
+  String body = server.arg("value");
+  body.toLowerCase();
+
+  bool isValid = false;
+  bool state = false;
+  if (body == "0" || body == "off" || body == "false")
+  {
+    state = false;
+    isValid = true;
+  }
+  else if (body == "1" || body == "on" || body == "true")
+  {
+    state = true;
+    isValid = true;
+  }
+
+  if (isValid)
+  {
+    displayEnabled = state;
+
+    server.send(200, "text/plain", String(displayEnabled));
+    log_i("Display %s", displayEnabled ? "enabled" : "disabled");
+  }
+  else
+  {
+    server.send(400, "text/plain", "Invalid display state value: " + body);
+    log_w("Invalid display state value: %s", body);
+  }
+}
+
+void restSetSpeedFactor(float *speedFactor, String name)
+{
   if (!server.hasArg("value"))
   {
     server.send(400, "text/plain", "No speed value provided");
@@ -249,7 +292,7 @@ void restSetSpeedFactor(float *speedFactor, String name) {
     log_w("Invalid maxSpeed value: %s", e.what());
     return;
   }
- 
+
   if (newSpeed < 0 || newSpeed > 100)
   {
     server.send(400, "text/plain", "Max speed out of range:" + newSpeed);
@@ -339,6 +382,7 @@ void restSetup()
   server.on("/getLightSensorReading", HTTP_GET, restGetLightSensorReading);
   server.on("/restart", HTTP_GET, restRestart);
   server.on("/syncTime", HTTP_GET, restSyncTime);
+  server.on("/setDisplayState", HTTP_GET, restSetDisplayState);
   server.on("/setLightSensorThreshold", HTTP_GET, restSetLightSensorThreshold);
   server.on("/setTransitionType", HTTP_GET, restSetTransitionType);
 
