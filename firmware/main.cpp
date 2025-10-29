@@ -9,7 +9,7 @@
 
 // animation variables
 Animation *animations[NUM_ANIMATIONS];
-Animation *curAnimation;
+Animation *curAnimation = nullptr;
 int curAnimationIndex = 0;
 int curAnimationIndexSeq = 0;
 hw_timer_t *refreshTimer;
@@ -80,6 +80,7 @@ void instantiateAllAnimations()
   animations[AnimationType::RandomScan] = new RandomScanAnimation();
   animations[AnimationType::Scan] = new ScanAnimation();
   animations[AnimationType::SlotMachine] = new SlotMachineAnimation();
+  animations[AnimationType::TubeTest] = new TubeTestAnimation();
 }
 
 void initializeNextAnimation()
@@ -91,7 +92,7 @@ void initializeNextAnimation()
   {
     do
     {
-      // both exclude name animation at index 0
+      // both behaviors exclude name animation at index 0
       if (transitionBehavior == TransitionBehavior::Sequential)
       {
         curAnimationIndexSeq = (curAnimationIndexSeq + 1) % NUM_ANIMATIONS;
@@ -195,15 +196,23 @@ void displaySettingsTask(void *pvParameters)
           isNightMode = true;
           brightness = nightBrightness;
           speedFactor = animationNightSpeedFactor;
+          if (curAnimation != nullptr) {
+            curAnimation->setBrightness(brightness);
+            curAnimation->setSpeed(speedFactor);
+          }
           lightSensorLastModeChangeMillis = millis();
         }
         // don't go day mode ever at night
-        else if (!isNight && lightSensorAverageReading >= lightSensorThreshold && isNightMode) 
+        else if (!isNight && lightSensorAverageReading >= lightSensorThreshold && isNightMode)
         {
           log_i("Light sensor reading greater than threshold: %d > %d, setting to day mode", lightSensorAverageReading, lightSensorThreshold);
           isNightMode = false;
           brightness = dayBrightness;
           speedFactor = animationDaySpeedFactor;
+          if (curAnimation != nullptr) {
+            curAnimation->setBrightness(brightness);
+            curAnimation->setSpeed(speedFactor);
+          }
           lightSensorLastModeChangeMillis = millis();
         }
       }
@@ -244,6 +253,10 @@ void displaySettingsTask(void *pvParameters)
 
       brightness = isNightMode ? nightBrightness : dayBrightness;
       speedFactor = isNightMode ? animationNightSpeedFactor : animationDaySpeedFactor;
+      if (curAnimation != nullptr) {
+        curAnimation->setBrightness(brightness);
+        curAnimation->setSpeed(speedFactor);
+      }
       delaySecs = 60 * (isNightMode ? minsToDay : minsToNight);
 
       String timeOfDay = isNightMode ? "night" : "day";
@@ -263,7 +276,7 @@ void setup()
 {
   Serial.begin(115200);
   delay(5000);
-  log_d("Starting setup");
+  log_i("Starting setup");
 
   // fully async including wifi setup
   wifiServices.setup(DEVICE_NAME);
@@ -282,7 +295,8 @@ void setup()
 
   // start first animation
   instantiateAllAnimations();
-  curAnimation = animations[AnimationType::Name];
+  curAnimationIndex = AnimationType::TubeTest;
+  curAnimation = animations[AnimationType::TubeTest];
   curAnimation->initialize(Tubes, brightness, speedFactor);
 
   log_i("Setup complete");

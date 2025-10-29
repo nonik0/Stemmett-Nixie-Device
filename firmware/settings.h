@@ -95,6 +95,9 @@ void loadSettings()
     animationsEnabledNight[AnimationType::Scan] = true;
     animationsEnabledNight[AnimationType::SlotMachine] = true;
 
+    animationsEnabledDay[AnimationType::TubeTest] = false;
+    animationsEnabledNight[AnimationType::TubeTest] = false;
+
     animationDaySpeedFactor = 1.0F;
     animationNightSpeedFactor = 0.15F;
     transitionBehavior = TransitionBehavior::Sequential;

@@ -12,8 +12,9 @@
 #include "randomScanAnimation.h"
 #include "scanAnimation.h"
 #include "slotMachineAnimation.h"
+#include "tubeTestAnimation.h"
 
-#define NUM_ANIMATIONS 11
+#define NUM_ANIMATIONS 12
 
 enum AnimationType {
   Name = 0, // name is primary animation
@@ -27,6 +28,7 @@ enum AnimationType {
   RandomScan,
   Scan,
   SlotMachine,
+  TubeTest,
   NumAnimations,
   Invalid,
 };
@@ -43,6 +45,7 @@ const char* AnimationTypeStrings[NUM_ANIMATIONS] = {
   "RandomScan",
   "Scan",
   "SlotMachine",
+  "TubeTest",
 };
 
 enum TransitionBehavior {
@@ -73,6 +76,8 @@ AnimationType parseAnimationType(String animationType) {
     return Scan;
   if (animationType == "SlotMachine")
     return SlotMachine;
+  if (animationType == "TubeTest")
+    return TubeTest;
   return Invalid;
 }
 

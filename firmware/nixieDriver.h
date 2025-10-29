@@ -16,6 +16,11 @@ void nixieSetup() {
 
   SPI.begin();
 
+  // zero out cathode buffer
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+
   // setup PWM for each tube
   for (int i = 0; i < NUM_TUBES; i++) {
     ledcAttach(Tubes[i].AnodePin, PWM_FREQUENCY, PWM_RESOLUTION);
