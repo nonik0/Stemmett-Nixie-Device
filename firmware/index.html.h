@@ -115,7 +115,7 @@ const char *indexHtml = R"====(
   <div>
     <p><b>Display:</b></p>
     <label class="switch">
-      <input id="displayEnabled" type="checkbox" onchange="setDisplayState(this.checked)">
+      <input id="displayEnabled" type="checkbox" onchange="setDisplay(this.checked)">
       <span class="slider rounded"></span>
     </label>
     <span class="label">Enabled</span>
@@ -277,8 +277,8 @@ function setBrightness(timeOfDay, brightness) {
   fetch(`/set${timeOfDay}Brightness?value=${brightness}`);
 }
 
-function setDisplayState(state) {
-  fetch(`/setDisplayState?value=${state ? 1 : 0}`);
+function setDisplay(state) {
+  fetch(`/display?value=${state ? 1 : 0}`);
 }
 
 function setLightSensorThreshold(threshold) {

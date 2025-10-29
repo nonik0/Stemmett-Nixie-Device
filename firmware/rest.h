@@ -20,6 +20,41 @@ void restIndex()
   log_i("Served index.html");
 }
 
+void restDisplay()
+{
+  if (server.hasArg("plain") || server.hasArg("value"))
+  {
+
+    String cmd = server.hasArg("plain")
+      ? server.arg("plain")
+      : server.arg("value");
+    cmd.toLowerCase();
+
+    bool isValid = false;
+    bool state = false;
+    if (cmd == "0" || cmd == "off" || cmd == "false")
+    {
+      state = false;
+      isValid = true;
+    }
+    else if (cmd == "1" || cmd == "on" || cmd == "true")
+    {
+      state = true;
+      isValid = true;
+    }
+
+    if (!isValid)
+    {
+      log_w("Invalid display state value: %s", cmd);
+    }
+    
+    displayEnabled = state;
+  }
+
+  server.send(200, "text/plain", displayEnabled ? "on" : "off");
+}
+
+
 void restGetState()
 {
   log_i("Sending device state");
@@ -233,45 +268,6 @@ void restSetBrightness(int *brightness, String name)
   dayNightTransitionLastUpdateMillis = 0;
 }
 
-void restSetDisplayState()
-{
-  if (!server.hasArg("value"))
-  {
-    server.send(400, "text/plain", "No state value provided");
-    log_w("No state value provided");
-    return;
-  }
-
-  String body = server.arg("value");
-  body.toLowerCase();
-
-  bool isValid = false;
-  bool state = false;
-  if (body == "0" || body == "off" || body == "false")
-  {
-    state = false;
-    isValid = true;
-  }
-  else if (body == "1" || body == "on" || body == "true")
-  {
-    state = true;
-    isValid = true;
-  }
-
-  if (isValid)
-  {
-    displayEnabled = state;
-
-    server.send(200, "text/plain", String(displayEnabled));
-    log_i("Display %s", displayEnabled ? "enabled" : "disabled");
-  }
-  else
-  {
-    server.send(400, "text/plain", "Invalid display state value: " + body);
-    log_w("Invalid display state value: %s", body);
-  }
-}
-
 void restSetSpeedFactor(float *speedFactor, String name)
 {
   if (!server.hasArg("value"))
@@ -378,11 +374,12 @@ void restSetup()
 {
   server.on("/", HTTP_GET, restIndex);
   server.on("/index.html", HTTP_GET, restIndex);
+  server.on("/display", HTTP_GET, restDisplay);
+  server.on("/display", HTTP_POST, restDisplay);
   server.on("/getState", HTTP_GET, restGetState);
   server.on("/getLightSensorReading", HTTP_GET, restGetLightSensorReading);
   server.on("/restart", HTTP_GET, restRestart);
   server.on("/syncTime", HTTP_GET, restSyncTime);
-  server.on("/setDisplayState", HTTP_GET, restSetDisplayState);
   server.on("/setLightSensorThreshold", HTTP_GET, restSetLightSensorThreshold);
   server.on("/setTransitionType", HTTP_GET, restSetTransitionType);
 
