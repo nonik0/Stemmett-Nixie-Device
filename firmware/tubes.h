@@ -39,6 +39,7 @@ typedef enum {
   IN7 = 1,
   IN7A = 2,
   IN7B = 3,
+  IN7_PARTIAL = 4, // custom config to avoid broken cathodes
 } TubeType;
 
 typedef enum {
@@ -85,12 +86,27 @@ typedef enum {
   IN7B_Omega = 8,
 } IN7B_Cathodes;
 
-const uint8_t TubeCathodeCount[4] = {10, 10, 8, 4};
-const uint8_t TubeCathodes[4][10] = {
+// TODO: add config to frontend to disable specific cathodes
+typedef enum {
+  IN7_PARTIAL_Minus = 0,
+  IN7_PARTIAL_Pi = 1,
+  IN7_PARTIAL_Plus = 2,
+  IN7_PARTIAL_m = 3,
+  IN7_PARTIAL_A = 4,
+  IN7_PARTIAL_V = 5,
+  //IN7_PARTIAL_M = 6,
+  IN7_PARTIAL_Omega = 7,
+  IN7_PARTIAL_Tilda = 8,
+  IN7_PARTIAL_Kappa = 9,
+} IN7_PARTIAL_Cathodes;
+
+const uint8_t TubeCathodeCount[5] = {10, 10, 8, 4, 9};
+const uint8_t TubeCathodes[5][10] = {
   {IN4_0, IN4_1, IN4_2, IN4_3, IN4_4, IN4_5, IN4_6, IN4_7, IN4_8, IN4_9},
   {IN7_Minus, IN7_Pi, IN7_Plus, IN7_m, IN7_A, IN7_V, IN7_M, IN7_Omega, IN7_Tilda, IN7_Kappa},
   {IN7A_M, IN7A_Plus, IN7A_m, IN7A_Percent, IN7A_Mu, IN7A_Minus, IN7A_Kappa, IN7A_Pi},
-  {IN7B_S, IN7B_Hz, IN7B_V, IN7B_Omega}
+  {IN7B_S, IN7B_Hz, IN7B_V, IN7B_Omega},
+  {IN7_PARTIAL_Minus, IN7_PARTIAL_Pi, IN7_PARTIAL_Plus, IN7_PARTIAL_m, IN7_PARTIAL_A, IN7_PARTIAL_V, IN7_PARTIAL_Omega, IN7_PARTIAL_Tilda, IN7_PARTIAL_Kappa}
 };
 
 typedef struct {

@@ -2,7 +2,7 @@
 
 #if defined(STELLA)
 Tube Tubes[NUM_TUBES] = {
-            {IN7,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},
+            {IN7_PARTIAL,  IN7_A    /*A*/, PWM_PIN_1, 0, 0, 0},
           {IN4,  IN4_7    /*L*/, PWM_PIN_2, 0, 0, 0},
         {IN4,  IN4_7    /*L*/, PWM_PIN_3, 0, 0, 0},
       {IN7A, IN7_m    /*E*/, PWM_PIN_4, 0, 0, 0},
